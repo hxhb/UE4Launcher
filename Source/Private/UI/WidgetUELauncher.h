@@ -24,16 +24,47 @@ public:
 	 */
 	void Construct(const FArguments& InArgs);
 
+	// open Developed by imzlp.me
+	void OpenAbotMe();
+public:
 	// Select EngineVersion
 	void HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
-	TSharedRef<SWidget> HandleCmbGenerateWidget(TSharedPtr<FString> InItem);
+	TSharedRef<SWidget> HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem);
 	FText HandleCmdEngineSelectionChangeText() const;
+private:
+	// Engine Version
+	TSharedPtr<FString>	CmbSelectCurrentEngine;
+	TSharedPtr<SComboBox<TSharedPtr<FString> > > CmdWidgetEngineSelector;
+	TArray<TSharedPtr<FString> > SelectorInstalledEngineList;
+
+public:
+	// Select Platfrom
+	void HandleCmbPlatfromSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
+	TSharedRef<SWidget> HandleCmbPlatfromGenerateWidget(TSharedPtr<FString> InItem);
+	FText HandleCmdPlatfromSelectionChangeText() const;
+
+	void UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged);
+	TSharedPtr<FString> GetSelectedPlatfrom()const;
+private:
+	// Engine Version
+	TSharedPtr<FString>	CmbSelectCurrentPlatfrom;
+	TSharedPtr<SComboBox<TSharedPtr<FString> > > CmdWidgetPlatfromSelector;
+	TArray<TSharedPtr<FString> > SelectorInstalledPlatfromList;
+
+public:
+	void HandleUseCmdCBStateChanged(ECheckBoxState NewState, bool* CheckBoxThatChanged);
+	ECheckBoxState HandleUseCmdCBStateIsChecked(bool* CheckBox) const;
+	bool UseCmdEngine()const;
+private:
+	bool bUseCmdEngine=false;
+public:
+	// uproject file path
 	FText GetProjectFileText()const;
 
 	FText GetLaunchEngineBtnText()const;
 	mutable FString LaunchEngineBtnText{TEXT("Launch")};
 	FText GetLaunchProjectBtnText()const;
-	mutable FString LaunchProjectBtnText{ TEXT("Launch Project") };
+	mutable FString LaunchProjectBtnText{ TEXT("Launch Configuration") };
 
 	// Open uproject file clickd event
 	FReply OnOpenProjectFileClicked();
@@ -63,13 +94,12 @@ protected:
 	FString GetCurrentSelectEngine()const;
 
 private:
+	// main panel scrollbox
+	TSharedPtr<SScrollBox> SrbWidgetMain;
 	TMap<FString, FString> RegisterEngineMap;
 	// Add Launch Parameter
 	TSharedPtr<SScrollBox> SrbWidgetLaunchArgs;
-	// Engine Version
-	TSharedPtr<FString>	CmbSelectCurrentEngine;
-	TSharedPtr<SComboBox<TSharedPtr<FString> > > CmdWidgetEngineSelector;
-	TArray<TSharedPtr<FString> > SelectorInstalledEngineList;
+
 	// open .uproject file
 	FString OpenProjectFilePath;
 

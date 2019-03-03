@@ -42,12 +42,6 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	// crank up a normal Slate application using the platform's standalone renderer
 	FSlateApplication::InitializeAsStandaloneApplication(GetStandardStandaloneRenderer());
 
-	//// Load the source code access module
-	//ISourceCodeAccessModule& SourceCodeAccessModule = FModuleManager::LoadModuleChecked<ISourceCodeAccessModule>(FName("SourceCodeAccess"));
-	//IModuleInterface& VisualStudioSourceCodeAccessModule = FModuleManager::LoadModuleChecked<IModuleInterface>(FName("VisualStudioSourceCodeAccess"));
-	//SourceCodeAccessModule.SetAccessor(FName("VisualStudioSourceCodeAccess"));
-
-
 	// set the application name
 	FGlobalTabmanager::Get()->SetApplicationTitle(LOCTEXT("AppTitle", "UE4 Launcher"));
 
@@ -55,23 +49,40 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	// RegisterTabSpawner can have mulit table on window
 	FModuleManager::LoadModuleChecked<ISlateReflectorModule>("SlateReflector").RegisterTabSpawner(FWorkspaceItem::NewGroup(LOCTEXT("DeveloperMenu", "Developer")));
 
-	// Registe WebBrowserTab
-	FGlobalTabmanager::Get()->RegisterTabSpawner("UE4LauncherTab", FOnSpawnTab::CreateStatic(&SpawnUELauncherTab))
-		.SetDisplayName(LOCTEXT("UE4LauncherTab", "UE4 Launcher"));
+	//// Registe WebBrowserTab
+	//FGlobalTabmanager::Get()->RegisterTabSpawner("UE4LauncherTab", FOnSpawnTab::CreateStatic(&SpawnUELauncherTab))
+	//	.SetDisplayName(LOCTEXT("UE4LauncherTab", "UE4 Launcher"));
 
-	TSharedRef<FTabManager::FLayout> Layout = FTabManager::NewLayout("SlateUE4Launcher_Layout")
-		->AddArea
-		(
-			FTabManager::NewArea(500, 500)
-			->SetWindow(FVector2D(500, 500), false)
-			->Split
-			(
-				FTabManager::NewStack()
-				->AddTab("UE4LauncherTab", ETabState::OpenedTab)
-			)
-		);
+	//TSharedRef<FTabManager::FLayout> Layout = FTabManager::NewLayout("SlateUE4Launcher_Layout")
+	//	->AddArea
+	//	(
+	//		FTabManager::NewArea(500, 500)
+	//		->SetWindow(FVector2D(500, 500), false)
+	//		->Split
+	//		(
+	//			FTabManager::NewStack()
+	//			->AddTab("UE4LauncherTab", ETabState::OpenedTab)
+	//		)
+	//	);
 
-	FGlobalTabmanager::Get()->RestoreFrom(Layout, TSharedPtr<SWindow>());
+	//FGlobalTabmanager::Get()->RestoreFrom(Layout, TSharedPtr<SWindow>());
+
+	TSharedPtr<SWindow> MainWindow = SNew(SWindow)
+		.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
+		.ScreenPosition(FVector2D(520, 550))
+		.ClientSize(FVector2D(520, 550))
+		.SupportsMaximize(false)
+		.AutoCenter(EAutoCenter::PrimaryWorkArea)
+		.MaxHeight(800)
+		.MaxWidth(800)
+		.MinHeight(580)
+		.MinWidth(520)
+		[
+			MakeWidgetUELauncher()
+		];
+
+	FSlateApplication::Get().AddWindow(MainWindow.ToSharedRef());
+
 
 	while (!GIsRequestingExit)
 	{
