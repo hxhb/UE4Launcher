@@ -371,7 +371,7 @@ FReply SWidgetUELauncher::OnOpenProjectFileClicked()
 		const bool bOpened = DesktopPlatform->OpenFileDialog(
 			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
 			LOCTEXT("OpenUEProjectDialogTitle", "Open .uproject").ToString(),
-			FPaths::GameAgnosticSavedDir(),
+			FString(TEXT("C:\\")),
 			TEXT(""),
 			TEXT("UE4 Project (*.uproject)|*.uproject"),
 			EFileDialogFlags::None,
@@ -380,7 +380,7 @@ FReply SWidgetUELauncher::OnOpenProjectFileClicked()
 
 		if (OpenFilenames.Num() > 0)
 		{
-			OpenProjectFilePath = OpenFilenames[0];
+			OpenProjectFilePath = FPaths::ConvertRelativePathToFull(OpenFilenames[0]);
 		}
 	}
 	return FReply::Handled();
