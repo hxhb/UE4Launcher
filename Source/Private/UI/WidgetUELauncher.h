@@ -68,6 +68,9 @@ public:
 
 	// Open uproject file clickd event
 	FReply OnOpenProjectFileClicked();
+	// open project directory
+	FReply OnOpenProjectFileDirClicked();
+
 	// Add Launch parameter
 	FReply AddLaunchParamButtonClicked();
 	FReply ClearAllLaunchParamsButtonClicked();
@@ -83,6 +86,7 @@ public:
 	TArray<FString> GetAllParams()const;
 	FString CombineAllParams(const TArray<FString>& pAllParams)const;
 
+	void OnProjectFileTextBoxChanged(const FText& NewText);
 protected:
 
 	// Slot

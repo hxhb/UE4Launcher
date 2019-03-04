@@ -48,6 +48,7 @@
 #include "Widgets/Input/STextComboPopup.h"
 
 #include "Paths.h"
+
 //
 #define LOCTEXT_NAMESPACE "WidgetUELauncher"
 
@@ -193,6 +194,8 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 												SNew(SEditableTextBox)
 												.Text(this,&SWidgetUELauncher::GetProjectFileText)
 												.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
+												.OnTextChanged(this,&SWidgetUELauncher::OnProjectFileTextBoxChanged)
+									
 											]
 										// open uproject file button
 										+SHorizontalBox::Slot()
@@ -200,12 +203,21 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											.AutoWidth()
 											[
 												SNew(SButton)
-												.Text(LOCTEXT("AddBreadCrumbLabel", "Open"))
+												.Text(LOCTEXT("SelectProjectFile", "Select"))
 												.HAlign(HAlign_Center)
 												.VAlign(VAlign_Center)
 												.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileClicked)
 											]
-
+										+ SHorizontalBox::Slot()
+											//.FillWidth(0.3f)
+											.AutoWidth()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
+											.HAlign(HAlign_Center)
+											.VAlign(VAlign_Center)
+											.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileDirClicked)
+											]
 									]
 
 							]
@@ -386,6 +398,28 @@ FReply SWidgetUELauncher::OnOpenProjectFileClicked()
 	return FReply::Handled();
 }
 
+FReply SWidgetUELauncher::OnOpenProjectFileDirClicked()
+{
+	FString FinalCommdParas = TEXT("/e,/root,");
+	TArray<FString> OutArray;
+	GetSelectedProjectPath().ParseIntoArray(OutArray, TEXT("/"));
+
+	FString FinalValidPath;
+	{
+		for (const auto& item : OutArray)
+		{
+			if (FPaths::DirectoryExists(FinalValidPath + item))
+			{
+				FinalValidPath.Append(item);
+				FinalValidPath.Append(TEXT("\\"));
+			}
+		}
+	}
+	FinalCommdParas.Append(FinalValidPath);
+
+	FPlatformProcess::CreateProc(TEXT("explorer "), *FinalCommdParas, true, false, false, NULL, NULL, NULL, NULL, NULL);
+	return FReply::Handled();
+}
 FText SWidgetUELauncher::GetProjectFileText()const
 {
 	return FText::FromString(OpenProjectFilePath);
@@ -541,6 +575,10 @@ bool SWidgetUELauncher::UseCmdEngine()const
 	return bUseCmdEngine;
 }
 
+void SWidgetUELauncher::OnProjectFileTextBoxChanged(const FText& NewText)
+{
+	OpenProjectFilePath = NewText.ToString();
+}
 
 TSharedRef<SWidget> MakeWidgetUELauncher()
 {
