@@ -77,6 +77,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 		.MaxWidth(800)
 		.MinHeight(580)
 		.MinWidth(520)
+		.IsTopmostWindow(true)
 		[
 			MakeWidgetUELauncher()
 		];
