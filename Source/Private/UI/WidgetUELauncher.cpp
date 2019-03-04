@@ -60,237 +60,259 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 	[
 			SNew(SBorder)
 			[
-				SAssignNew(SrbWidgetMain,SScrollBox)
-				+SScrollBox::Slot()
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				[
+					SAssignNew(SrbWidgetMain, SScrollBox)
+					+ SScrollBox::Slot()
 					.Padding(5.0f)
 					[
 						SNew(SGridPanel)
-							.FillColumn(0,1.0f)
-						+SGridPanel::Slot(0,1)
+						.FillColumn(0, 1.0f)
+						+ SGridPanel::Slot(0, 1)
 							.HAlign(HAlign_Fill)
-							.Padding(0.0f,3.0f)
+							.Padding(0.0f, 3.0f)
 							[
 								SNew(SVerticalBox)
-								+SVerticalBox::Slot()
-									[
-										SNew(SHorizontalBox)
-										+SHorizontalBox::Slot()
-											.HAlign(HAlign_Left)
-											[
-												SNew(STextBlock)
-												.Text(LOCTEXT("SelectEngine", "Select Engine Version:"))
-											]
-										+SHorizontalBox::Slot()
-											.AutoWidth()
-											.HAlign(HAlign_Right)
-											[
-												SNew(SHyperlink)
-												.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
-												.OnNavigate(this,&SWidgetUELauncher::OpenAbotMe)
-											]
-									
-									]
-								+SVerticalBox::Slot()
-									.AutoHeight()
-									.Padding(5.0f)
-									[
-										SNew(SHorizontalBox)
-										+SHorizontalBox::Slot()
-											.AutoWidth()
-											.HAlign(HAlign_Left)
-											[
-												SAssignNew(CmdWidgetEngineSelector, SComboBox<TSharedPtr<FString>>)
-												.OptionsSource(&SelectorInstalledEngineList)
-												.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbEngineSelectionChanged)
-												.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbEngineGenerateWidget)
-												[
-													SNew(STextBlock)
-														.Text(this, &SWidgetUELauncher::HandleCmdEngineSelectionChangeText)
-												]
-											]
-										+ SHorizontalBox::Slot()
-											.HAlign(HAlign_Left)
-											.AutoWidth()
-											[
-												SAssignNew(BtnLaunchEngine,SButton)
-													//.Text(LOCTEXT("LaunchEngine", "Launch"))
-													.Text(this,&SWidgetUELauncher::GetLaunchEngineBtnText)
-													.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchEngine)
-											]
-									]
-							]
-							+ SGridPanel::Slot(0, 2)
-								.HAlign(HAlign_Fill)
-								.Padding(0.0f, 3.0f)
-								[
-									SNew(SHorizontalBox)
-									+ SHorizontalBox::Slot()
-										.AutoWidth()
-										.HAlign(HAlign_Left)
-										.VAlign(VAlign_Center)
-										[
-											SNew(STextBlock)
-											.Text(LOCTEXT("SelectPlatfrom", "Platfrom:"))
-										]
-									+ SHorizontalBox::Slot()
-										.AutoWidth()
-										.HAlign(HAlign_Left)
-										.Padding(2.0f)
-										[
-											SAssignNew(CmdWidgetPlatfromSelector, SComboBox<TSharedPtr<FString>>)
-											.OptionsSource(&SelectorInstalledPlatfromList)
-											.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbPlatfromSelectionChanged)
-											.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbPlatfromGenerateWidget)
-											[
-												SNew(STextBlock)
-												.Text(this, &SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText)
-											]
-										]
-									+ SHorizontalBox::Slot()
-										.AutoWidth()
-										.HAlign(HAlign_Left)
-										.VAlign(VAlign_Center)
-										.Padding(5.0f,0.0f,0.0f,0.0f)
-										[
-											SNew(STextBlock)
-											.Text(LOCTEXT("UseCmdEngine", "UseCmd:"))
-										]
-									+ SHorizontalBox::Slot()
-										.AutoWidth()
-										.HAlign(HAlign_Left)
-										.Padding(2.0f)
-										[
-											SNew(SCheckBox)
-												.IsChecked(this, &SWidgetUELauncher::HandleUseCmdCBStateIsChecked, &bUseCmdEngine)
-												.OnCheckStateChanged(this, &SWidgetUELauncher::HandleUseCmdCBStateChanged, &bUseCmdEngine)
-											[
-												SNew(STextBlock)
-													.Text(LOCTEXT("UE4EditorCMD","UE4Editor-cmd"))
-
-											]
-										]
-								]
-						// open project location
-						+SGridPanel::Slot(0,3)
+								+ SVerticalBox::Slot()
+							[
+								SNew(SHorizontalBox)
+								+ SHorizontalBox::Slot()
 							.HAlign(HAlign_Left)
-							.Padding(0.0f,3.0f)
 							[
-								SNew(SVerticalBox)
-								+SVerticalBox::Slot()
-									[
-										SNew(STextBlock)
-										.Text(LOCTEXT("UE Project File", "Select your .uproject file:"))
-									]
-								+SVerticalBox::Slot()
-									.AutoHeight()
-									.Padding(5.0f)
-									[
-										// show uproject file path
-										SNew(SHorizontalBox)
-										+ SHorizontalBox::Slot()
-											//.AutoWidth()
-											.FillWidth(1.0f)
-											[
-												SNew(SEditableTextBox)
-												.Text(this,&SWidgetUELauncher::GetProjectFileText)
-												.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
-												.OnTextChanged(this,&SWidgetUELauncher::OnProjectFileTextBoxChanged)
-									
-											]
-										// open uproject file button
-										+SHorizontalBox::Slot()
-											//.FillWidth(0.3f)
-											.AutoWidth()
-											[
-												SNew(SButton)
-												.Text(LOCTEXT("SelectProjectFile", "Select"))
-												.HAlign(HAlign_Center)
-												.VAlign(VAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileClicked)
-											]
-										+ SHorizontalBox::Slot()
-											//.FillWidth(0.3f)
-											.AutoWidth()
-											[
-												SNew(SButton)
-												.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
-											.HAlign(HAlign_Center)
-											.VAlign(VAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileDirClicked)
-											]
-									]
-
+								SNew(STextBlock)
+								.Text(LOCTEXT("SelectEngine", "Select Engine Version:"))
+							]
+						+ SHorizontalBox::Slot()
+							.AutoWidth()
+							.HAlign(HAlign_Right)
+							[
+								SNew(SHyperlink)
+								.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
+							.OnNavigate(this, &SWidgetUELauncher::OpenAboutMeWebsite)
 							]
 
-						// input launch params
-						+ SGridPanel::Slot(0, 15)
-							[
-								SNew(SVerticalBox)
-								+ SVerticalBox::Slot()
-									[
-										SNew(STextBlock)
-											.Text(LOCTEXT("LauncherParams", "Launch Parameters:"))
-									]
-								+ SVerticalBox::Slot()
-									.AutoHeight()
-									.Padding(3.0f)
-									[
-										// init create a input box
-										SAssignNew(SrbWidgetLaunchArgs, SScrollBox)
-										+ SScrollBox::Slot()
-											.Padding(0.0f,3.0f)
-											[
-												SNew(SEditableTextBox)
-												.HintText(LOCTEXT("LaunchParam_0", "Input Project Launch paramater."))
-											]
-									]
-								// add a new input param box
-								+ SVerticalBox::Slot()
-									.AutoHeight()
-									[
-										SNew(SHorizontalBox)
-										+ SHorizontalBox::Slot()
-											[
-												SNew(SButton)
-												.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
-												.HAlign(HAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::ClearAllLaunchParamsButtonClicked)
-											]
-										+ SHorizontalBox::Slot()
-											[
-												SNew(SButton)
-												.Text(LOCTEXT("AddParameter", "Add Parameter"))
-												.HAlign(HAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::AddLaunchParamButtonClicked)
-											]
-									]
-							
 							]
+						+ SVerticalBox::Slot()
+							.AutoHeight()
+							.Padding(5.0f)
+							[
+								SNew(SHorizontalBox)
+								+ SHorizontalBox::Slot()
+							.AutoWidth()
+							.HAlign(HAlign_Left)
+							[
+								SAssignNew(CmdWidgetEngineSelector, SComboBox<TSharedPtr<FString>>)
+								.OptionsSource(&SelectorInstalledEngineList)
+							.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbEngineSelectionChanged)
+							.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbEngineGenerateWidget)
+							[
+								SNew(STextBlock)
+								.Text(this, &SWidgetUELauncher::HandleCmdEngineSelectionChangeText)
+							]
+							]
+						+ SHorizontalBox::Slot()
+							.HAlign(HAlign_Left)
+							.AutoWidth()
+							[
+								SAssignNew(BtnLaunchEngine, SButton)
+								//.Text(LOCTEXT("LaunchEngine", "Launch"))
+							.Text(this, &SWidgetUELauncher::GetLaunchEngineBtnText)
+							.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchEngine)
+							]
+							]
+							]
+					+ SGridPanel::Slot(0, 2)
+						.HAlign(HAlign_Fill)
+						.Padding(0.0f, 3.0f)
+						[
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+						.AutoWidth()
+						.HAlign(HAlign_Left)
+						.VAlign(VAlign_Center)
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("SelectPlatfrom", "Platfrom:"))
+						]
+					+ SHorizontalBox::Slot()
+						.AutoWidth()
+						.HAlign(HAlign_Left)
+						.Padding(2.0f)
+						[
+							SAssignNew(CmdWidgetPlatfromSelector, SComboBox<TSharedPtr<FString>>)
+							.OptionsSource(&SelectorInstalledPlatfromList)
+						.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbPlatfromSelectionChanged)
+						.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbPlatfromGenerateWidget)
+						[
+							SNew(STextBlock)
+							.Text(this, &SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText)
+						]
+						]
+					+ SHorizontalBox::Slot()
+						.AutoWidth()
+						.HAlign(HAlign_Left)
+						.VAlign(VAlign_Center)
+						.Padding(5.0f, 0.0f, 0.0f, 0.0f)
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("UseCmdEngine", "UseCmd:"))
+						]
+					+ SHorizontalBox::Slot()
+						.AutoWidth()
+						.HAlign(HAlign_Left)
+						.Padding(2.0f)
+						[
+							SNew(SCheckBox)
+							.IsChecked(this, &SWidgetUELauncher::HandleUseCmdCBStateIsChecked, &bUseCmdEngine)
+						.OnCheckStateChanged(this, &SWidgetUELauncher::HandleUseCmdCBStateChanged, &bUseCmdEngine)
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("UE4EditorCMD", "UE4Editor-cmd"))
 
-						// SHeader
-						+ SGridPanel::Slot(0, 18)
-							.Padding(0.0f, 3.0f,0.0f,3.0f)
-							[
-								SNew(SHeader)
-								.HAlign(HAlign_Center)
-								.Content()
-								[
-									SNew(STextBlock)
-									.Text(LOCTEXT("HeaderContentLabel", "Launch"))
-								]
-							]
+						]
+						]
+						]
+					// open project location
+					+ SGridPanel::Slot(0, 3)
+						.HAlign(HAlign_Left)
+						.Padding(0.0f, 3.0f)
+						[
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot()
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("UE Project File", "Select your .uproject file:"))
+						]
+					+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(5.0f)
+						[
+							// show uproject file path
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+						//.AutoWidth()
+						.FillWidth(1.0f)
+						[
+							SNew(SEditableTextBox)
+							.Text(this, &SWidgetUELauncher::GetProjectFileText)
+						.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
+						.OnTextChanged(this, &SWidgetUELauncher::OnProjectFileTextBoxChanged)
 
-						// Launch Button
-						+SGridPanel::Slot(0,21)
-							[
-								SAssignNew(BtnLaunchProject,SButton)
-								.Text(this,&SWidgetUELauncher::GetLaunchProjectBtnText)
-								.HAlign(HAlign_Center)
-								.VAlign(VAlign_Center)
-								.OnClicked(this,&SWidgetUELauncher::ClickEventLaunchProject)
-							]
+						]
+					// open uproject file button
+					+ SHorizontalBox::Slot()
+						//.FillWidth(0.3f)
+						.AutoWidth()
+						[
+							SNew(SButton)
+							.Text(LOCTEXT("SelectProjectFile", "Select"))
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileClicked)
+						]
+					+ SHorizontalBox::Slot()
+						//.FillWidth(0.3f)
+						.AutoWidth()
+						[
+							SNew(SButton)
+							.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileDirClicked)
+						]
+						]
+
+						]
+
+					// input launch params
+					+ SGridPanel::Slot(0, 15)
+						[
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot()
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("LauncherParams", "Launch Parameters:"))
+						]
+					+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(3.0f)
+						[
+							// init create a input box
+							SAssignNew(SrbWidgetLaunchArgs, SScrollBox)
+							+ SScrollBox::Slot()
+						.Padding(0.0f, 3.0f)
+						[
+							SNew(SEditableTextBox)
+							.HintText(LOCTEXT("LaunchParam_0", "Input Project Launch paramater."))
+						]
+						]
+					// add a new input param box
+					+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+						[
+							SNew(SButton)
+							.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
+						.HAlign(HAlign_Center)
+						.OnClicked(this, &SWidgetUELauncher::ClearAllLaunchParamsButtonClicked)
+						]
+					+ SHorizontalBox::Slot()
+						[
+							SNew(SButton)
+							.Text(LOCTEXT("AddParameter", "Add Parameter"))
+						.HAlign(HAlign_Center)
+						.OnClicked(this, &SWidgetUELauncher::AddLaunchParamButtonClicked)
+						]
+						]
+						]
+
+					// SHeader
+					+ SGridPanel::Slot(0, 18)
+						.Padding(0.0f, 3.0f, 0.0f, 3.0f)
+						[
+							SNew(SHeader)
+							.HAlign(HAlign_Center)
+						.Content()
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("HeaderContentLabel", "Launch"))
+						]
+						]
+
+					// Launch Button
+					+ SGridPanel::Slot(0, 21)
+						[
+							SAssignNew(BtnLaunchProject, SButton)
+							.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+						.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchProject)
+						]
+
 					]
 				]
+
+				//+SHorizontalBox::Slot()
+				//[
+				//	SNew(SVerticalBox)
+				//	+ SVerticalBox::Slot()
+				//	[
+				//		SNew(SHorizontalBox)
+				//			+ SHorizontalBox::Slot()
+				//			.HAlign(HAlign_Left)
+				//			[
+				//				SNew(STextBlock)
+				//				.Text(LOCTEXT("HistoryList", "History:"))
+				//			]
+				//	]
+				//]
+
+
+				]
+
 	];
 	// initialize SComboBox
 	{
@@ -307,7 +329,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 
 }
 
-void SWidgetUELauncher::OpenAbotMe()
+void SWidgetUELauncher::OpenAboutMeWebsite()
 {
 	FPlatformProcess::LaunchURL(TEXT("https://imzlp.me"), NULL, NULL);
 }
@@ -589,8 +611,6 @@ TSharedRef<SWidget> MakeWidgetUELauncher()
 		.RenderTransform_Static(&GetTestRenderTransform)
 		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
 }
-
-
 
 TArray<FString> GetAllRegistedEngine(TMap<FString,FString> &outs)
 {

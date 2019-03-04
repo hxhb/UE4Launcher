@@ -25,24 +25,25 @@ public:
 	void Construct(const FArguments& InArgs);
 
 	// open Developed by imzlp.me
-	void OpenAbotMe();
+	void OpenAboutMeWebsite();
 public:
-	// Select EngineVersion
+	// Engine Version Selector Event
 	void HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
 	TSharedRef<SWidget> HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem);
 	FText HandleCmdEngineSelectionChangeText() const;
 private:
 	// Engine Version
 	TSharedPtr<FString>	CmbSelectCurrentEngine;
-	TSharedPtr<SComboBox<TSharedPtr<FString> > > CmdWidgetEngineSelector;
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> CmdWidgetEngineSelector;
 	TArray<TSharedPtr<FString> > SelectorInstalledEngineList;
 
 public:
-	// Select Platfrom
+	// Platfrom Selector Event
 	void HandleCmbPlatfromSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
 	TSharedRef<SWidget> HandleCmbPlatfromGenerateWidget(TSharedPtr<FString> InItem);
 	FText HandleCmdPlatfromSelectionChangeText() const;
 
+	// Update Platfrom Info from EnginePath
 	void UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged);
 	TSharedPtr<FString> GetSelectedPlatfrom()const;
 private:
