@@ -69,7 +69,63 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 					[
 						SNew(SGridPanel)
 						.FillColumn(0, 1.0f)
-						+ SGridPanel::Slot(0, 1)
+						+ SGridPanel::Slot(0, 0)
+							.HAlign(HAlign_Fill)
+							.Padding(0.0f, 1.0f, 0.0f, 1.0f)
+							[
+								SNew(SVerticalBox)
+								+SVerticalBox::Slot()
+								[
+									SNew(SHeader)
+									.HAlign(HAlign_Center)
+									.Content()
+									[
+										SNew(STextBlock)
+										.Text(LOCTEXT("LoadSaveConfig", "Load/Save Config"))
+									]
+								]
+								+SVerticalBox::Slot()
+								.AutoHeight()
+								[
+									SNew(SHorizontalBox)
+									+ SHorizontalBox::Slot()
+									[
+										SNew(SHorizontalBox)
+										+ SHorizontalBox::Slot()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("LoadConfig", "Load Config"))
+												.HAlign(HAlign_Center)
+												.OnClicked(this, &SWidgetUELauncher::BtnClickEventLoadConfig)
+											]
+										+ SHorizontalBox::Slot()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("SaveConfig", "Save Config"))
+												.HAlign(HAlign_Center)
+												.OnClicked(this, &SWidgetUELauncher::BtnClickEventSaveConfig)
+											]
+										+SHorizontalBox::Slot()
+											.HAlign(HAlign_Center)
+											[
+												SNew(SHyperlink)
+													.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
+													.OnNavigate(this, &SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite)
+											]
+									]
+								]
+								+SVerticalBox::Slot()
+									[
+										SNew(SHeader)
+										.HAlign(HAlign_Center)
+										.Content()
+										[
+											SNew(STextBlock)
+											.Text(LOCTEXT("ConfigurationText", "Configuration"))
+										]
+									]
+							]
+						+ SGridPanel::Slot(0, 2)
 							.HAlign(HAlign_Fill)
 							.Padding(0.0f, 3.0f)
 							[
@@ -83,14 +139,14 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 										SNew(STextBlock)
 										.Text(LOCTEXT("SelectEngine", "Select Engine Version:"))
 									]
-									+ SHorizontalBox::Slot()
-									.AutoWidth()
-									.HAlign(HAlign_Right)
-									[
-										SNew(SHyperlink)
-										.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
-									.OnNavigate(this, &SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite)
-									]
+									//+ SHorizontalBox::Slot()
+									//.AutoWidth()
+									//.HAlign(HAlign_Right)
+									//[
+									//	SNew(SHyperlink)
+									//	.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
+									//	.OnNavigate(this, &SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite)
+									//]
 
 								]
 								+ SVerticalBox::Slot()
@@ -130,7 +186,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											]
 									]
 							]
-					+ SGridPanel::Slot(0, 2)
+					+ SGridPanel::Slot(0, 3)
 						.HAlign(HAlign_Fill)
 						.Padding(0.0f, 3.0f)
 						[
@@ -182,7 +238,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 									]
 						]
 					// open project location
-					+ SGridPanel::Slot(0, 3)
+					+ SGridPanel::Slot(0, 4)
 						.HAlign(HAlign_Left)
 						.Padding(0.0f, 3.0f)
 						[
@@ -204,8 +260,8 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 										[
 											SNew(SEditableTextBox)
 											.Text(this, &SWidgetUELauncher::GetProjectFileText)
-										.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
-										.OnTextChanged(this, &SWidgetUELauncher::OnProjectFileTextBoxChanged)
+											.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
+											.OnTextChanged(this, &SWidgetUELauncher::OnProjectFileTextBoxChanged)
 
 										]
 									// open uproject file button
@@ -234,7 +290,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						]
 
 					// input launch params
-					+ SGridPanel::Slot(0, 15)
+					+ SGridPanel::Slot(0, 5)
 						[
 							SNew(SVerticalBox)
 							+ SVerticalBox::Slot()
@@ -279,7 +335,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 							]
 
 					// SHeader
-					+ SGridPanel::Slot(0, 18)
+					+ SGridPanel::Slot(0, 6)
 						.Padding(0.0f, 3.0f, 0.0f, 3.0f)
 						[
 							SNew(SHeader)
@@ -292,7 +348,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						]
 
 					// Launch Button
-					+ SGridPanel::Slot(0, 21)
+					+ SGridPanel::Slot(0, 7)
 						[
 							SAssignNew(BtnLaunchProject, SButton)
 							.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
@@ -322,15 +378,20 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 				]
 
 	];
-
-	// initialize SComboBox
+	// initialize
+	TMap<FString, FString> EngineMap = GetAllRegistedEngineMap();
 	{
-		TMap<FString, FString> EngineMap = GetAllRegistedEngineMap();
-		UpdateEngineSelector(EngineMap,TEXT("D:/UnrealEngine/Offical_Source/4.18"));
+		
+		//UpdateEngineSelector(EngineMap,TEXT("D:/UnrealEngine/Offical_Source/4.18"));
 		//UpdatePlatfromSelector(GetSelectedEnginePath(), TEXT("Win32"));
-		UpdateSelectedPlatfrom(TEXT("Win32"));
-		UpdateLaunchParams({ TEXT("-game"),TEXT("-LOG") });
-		UpdateUseCmdEngine(true);
+		//UpdateSelectedProject(TEXT("C:/Users/visionsmile/Documents/Unreal Projects/OldScandinaviaMedievalVil/OldScandinaviaMedievalVil.uproject"));
+		//UpdateLaunchParams({ TEXT("-game"),TEXT("-LOG") });
+		//UpdateUseCmdEngine(true);
+		UpdateEngineSelector(EngineMap);
+		UpdatePlatfromSelector(GetSelectedEnginePath());
+		UpdateSelectedProject();
+		UpdateLaunchParams();
+		UpdateUseCmdEngine();
 	}
 
 }
@@ -408,13 +469,13 @@ FReply SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton()
 FReply SWidgetUELauncher::BtnClickEventLaunchEngine()
 {
 
-	EngineLauncher(GetSelectedEnginePath(), TEXT(""));
+	EngineLauncher(GetSelectedEngineBinPath(), TEXT(""));
 	return FReply::Handled();
 }
 
 FReply SWidgetUELauncher::BtnClickEventLaunchProject()
 {
-	FString EnginePath=GetSelectedEnginePath();
+	FString EnginePath=GetSelectedEngineBinPath();
 	FString ProjectPath = GetSelectedProjectPath();
 	FString AllParams = CombineAllLaunchParams(GetAllLaunchParams());
 
@@ -483,13 +544,143 @@ FReply SWidgetUELauncher::BtnClickEventOpenProjectFileDir()
 
 FReply SWidgetUELauncher::BtnClickEventOpenVS()
 {
-	FString ue4sln = GetSelectedEngine() + TEXT("//UE4.sln");
+	FString ue4sln = GetSelectedEnginePath() + TEXT("//UE4.sln");
 	FString FinalCmdParams = TEXT("/c start devenv.exe ") + ue4sln;
 	FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
 }
 
+FReply SWidgetUELauncher::BtnClickEventLoadConfig()
+{
+	FString SelectedLoadConfigPath;
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 
+	if (DesktopPlatform)
+	{
+		TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindWidgetWindow(SharedThis(this));
+
+		TArray<FString> OpenFilenames;
+		const bool bOpened = DesktopPlatform->OpenFileDialog(
+			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
+			LOCTEXT("OpenUE4LaunchConfig", "Open .json").ToString(),
+			FString(TEXT("C:\\")),
+			TEXT(""),
+			TEXT("UE4Launcher json (*.json)|*.json"),
+			EFileDialogFlags::None,
+			OpenFilenames
+		);
+
+		if (OpenFilenames.Num() > 0)
+		{
+			SelectedLoadConfigPath = FPaths::ConvertRelativePathToFull(OpenFilenames[0]);
+			{
+				FString jsonValue;
+				bool flag = FFileHelper::LoadFileToString(jsonValue, *SelectedLoadConfigPath);
+				if (flag)
+				{
+					FUELaunchConf conf=DeSerializationConf(jsonValue);
+					UpdateAll(conf);
+				}
+			}
+		}
+	}
+	return FReply::Handled();
+}
+FReply SWidgetUELauncher::BtnClickEventSaveConfig()
+{
+	FString SelectedSaveConfigPath;
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+
+	if (DesktopPlatform)
+	{
+		TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindWidgetWindow(SharedThis(this));
+
+		TArray<FString> SaveFilenames;
+		const bool bOpened = DesktopPlatform->SaveFileDialog(
+			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
+			LOCTEXT("OpenUE4LaunchConfig", "Open .json").ToString(),
+			FString(TEXT("C:\\")),
+			TEXT(""),
+			TEXT("UE4Launcher json (*.json)|*.json"),
+			EFileDialogFlags::None,
+			SaveFilenames
+		);
+
+		if (SaveFilenames.Num() > 0)
+		{
+			SelectedSaveConfigPath = FPaths::ConvertRelativePathToFull(SaveFilenames[0]);
+
+			{
+				// serialization config
+				FFileHelper::SaveStringToFile(SerializationConf(GetLaunchConf()), *SelectedSaveConfigPath);
+			}
+		}
+
+
+	}
+	return FReply::Handled();
+}
+
+FUELaunchConf SWidgetUELauncher::GetLaunchConf()const
+{
+	FUELaunchConf Conf;
+	Conf.LaunchEngine = GetSelectedEnginePath();
+	Conf.LaunchPlatfrom = *GetSelectedPlatfrom();
+	Conf.bUseCmdEngine = GetUseCmdEngine();
+	Conf.LaunchParams = GetAllLaunchParams();
+	Conf.LaunchProject = GetSelectedProjectPath();
+	return Conf;
+}
+FString SWidgetUELauncher::SerializationConf(const FUELaunchConf& SaveConfig)
+{
+	FString JsonStr;
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> JsonWriter = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&JsonStr);
+	JsonWriter->WriteObjectStart();
+	JsonWriter->WriteValue(TEXT("LaunchEngine"), SaveConfig.LaunchEngine);
+	JsonWriter->WriteValue(TEXT("LaunchPlatfrom"), SaveConfig.LaunchPlatfrom);
+	JsonWriter->WriteValue(TEXT("LaunchProject"), SaveConfig.LaunchProject);
+	JsonWriter->WriteValue(TEXT("bUseCmdEngine"), SaveConfig.bUseCmdEngine);
+	JsonWriter->WriteArrayStart("LaunchParams");
+	for (const auto& ParamItem : SaveConfig.LaunchParams)
+	{
+		JsonWriter->WriteObjectStart();
+		JsonWriter->WriteValue(TEXT("ParamItem"), ParamItem);
+		JsonWriter->WriteObjectEnd();
+	}
+	JsonWriter->WriteArrayEnd();
+	JsonWriter->WriteObjectEnd();
+	JsonWriter->Close();
+	return JsonStr;
+}
+FUELaunchConf SWidgetUELauncher::DeSerializationConf(const FString& jsonConf)
+{
+	FUELaunchConf loadConf;
+	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(jsonConf);
+	TSharedPtr<FJsonObject> JsonObject;
+	bool BFlag = FJsonSerializer::Deserialize(JsonReader, JsonObject);
+	if (BFlag)
+	{
+		loadConf.LaunchEngine = JsonObject->GetStringField(TEXT("LaunchEngine"));
+		loadConf.LaunchPlatfrom = JsonObject->GetStringField(TEXT("LaunchPlatfrom"));
+		loadConf.LaunchProject = JsonObject->GetStringField(TEXT("LaunchProject"));
+		loadConf.bUseCmdEngine = JsonObject->GetBoolField(TEXT("bUseCmdEngine"));
+		TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("LaunchParams");
+		for (const auto& DataItem : LaunchParamsData)
+		{
+			loadConf.LaunchParams.Add(DataItem->AsObject()->GetStringField(TEXT("ParamItem")));
+		}
+	}
+	return loadConf;
+}
+
+void SWidgetUELauncher::UpdateAll(const FUELaunchConf& conf)
+{
+	UpdateEngineSelector(RegisterEngineMap,conf.LaunchEngine);
+	UpdatePlatfromSelector(GetSelectedEnginePath(),conf.LaunchPlatfrom);
+	UpdateSelectedProject(conf.LaunchProject);
+	UpdateLaunchParams(conf.LaunchParams);
+	UpdateUseCmdEngine(conf.bUseCmdEngine);
+}
 
 TSharedPtr<FString> SWidgetUELauncher::GetSelectedPlatfrom()const
 {
@@ -501,15 +692,15 @@ FText SWidgetUELauncher::GetProjectFileText()const
 	return FText::FromString(OpenProjectFilePath);
 }
 
-FString SWidgetUELauncher::GetSelectedEngine()const
+FString SWidgetUELauncher::GetSelectedEnginePath()const
 {
 	return *CmbSelectCurrentEngine;
 }
-FString SWidgetUELauncher::GetSelectedEnginePath()const
+FString SWidgetUELauncher::GetSelectedEngineBinPath()const
 {
 	TSharedPtr<FString> Platfrom = GetSelectedPlatfrom();
 	FString EngineProgramName = GetUseCmdEngine() ? TEXT("UE4Editor-cmd.exe") : TEXT("UE4Editor.exe");
-	FString resault(FPaths::Combine(*GetSelectedEngine(), TEXT("Engine/Binaries/"),*Platfrom,*EngineProgramName));
+	FString resault(FPaths::Combine(*GetSelectedEnginePath(), TEXT("Engine/Binaries/"),*Platfrom,*EngineProgramName));
 	return resault;
 }
 
@@ -624,7 +815,8 @@ void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString
 	int32 DefaultPlatfromIndex=0;
 	FString ue4editor(TEXT("UE4Editor"));
 	ue4editor.Append(EXECUTABLE_FORMAT);
-	TArray<TSharedPtr<FString>> Platfroms ={
+	SelectorPlatfromList.Empty();
+	TArray<TSharedPtr<FString>> Platfroms = {
 		MakeShareable(new FString(TEXT("Win64"))),
 		MakeShareable(new FString(TEXT("Win32")))
 	};
@@ -632,7 +824,7 @@ void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString
 	for (const auto& PlatfromItem : Platfroms)
 	{
 		
-		if (FPaths::FileExists(FPaths::Combine(EnginePath,TEXT("Engine/Binaries") ,*PlatfromItem, ue4editor)))
+		if (FPaths::FileExists(EnginePath+TEXT("/Engine/Binaries/")+*PlatfromItem+TEXT("/")+ue4editor))
 		{
 			int32 Index = SelectorPlatfromList.AddUnique(PlatfromItem);
 			if (!DefaultPlatfrom.IsEmpty() && PlatfromItem->Equals(DefaultPlatfrom))
@@ -655,7 +847,7 @@ void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString
 
 void SWidgetUELauncher::UpdateSelectedPlatfrom(const FString& Platfrom)
 {
-	UpdatePlatfromSelector(GetSelectedEnginePath(),Platfrom);
+	UpdatePlatfromSelector(GetSelectedEngineBinPath(),Platfrom);
 
 }
 void SWidgetUELauncher::UpdateOpenVSButton(const FString& EnginePath)
@@ -677,9 +869,10 @@ void SWidgetUELauncher::UpdateUseCmdEngine(bool pUseCmd)
 	CbUseCmdEngine->SetIsChecked(local_IsChecked);
 }
 
-void SWidgetUELauncher::UpdateLaunchParams(TArray<FString> pParamsArray)
+void SWidgetUELauncher::UpdateLaunchParams(const TArray<FString>& pParamsArray)
 {
-	SrbWidgetLaunchParams->ClearChildren();
+	if (!!pParamsArray.Num())
+		SrbWidgetLaunchParams->ClearChildren();
 	for (const auto& ParamItem : pParamsArray)
 	{
 		if (!ParamItem.IsEmpty())
@@ -687,9 +880,13 @@ void SWidgetUELauncher::UpdateLaunchParams(TArray<FString> pParamsArray)
 			AddParamTextBoxToSlot(ParamItem);
 		}
 	}
+
 }
 
-
+void SWidgetUELauncher::UpdateSelectedProject(const FString& ProjectPath)
+{
+	OpenProjectFilePath = ProjectPath;
+}
 
 
 void SWidgetUELauncher::EngineLauncher(const FString& EnginePath, const FString& Params)const

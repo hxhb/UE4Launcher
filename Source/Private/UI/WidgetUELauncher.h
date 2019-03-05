@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/SWidget.h"
+#include "Data/FUELaunchConf.h"
+#include "Json.h"
 
 /** @return a new Drag and Drop test widget */
 TSharedRef<SWidget> MakeWidgetUELauncher();
@@ -29,7 +31,7 @@ public:
 	void HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
 	TSharedRef<SWidget> HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem);
 	FText HandleCmdEngineSelectionChangeText() const;
-	FString GetSelectedEngine()const;
+
 private:
 	// Engine Version
 	TSharedPtr<FString>	CmbSelectCurrentEngine;
@@ -58,14 +60,16 @@ public:
 	FText GetProjectFileText()const;
 	FText GetLaunchEngineBtnText()const;
 	FText GetLaunchProjectBtnText()const;
-	// Get All Launch Parameters
+
 	FString GetSelectedEnginePath()const;
+	FString GetSelectedEngineBinPath()const;
 	// get Selected .uproject file path
 	FString GetSelectedProjectPath()const;
 	// Get Selected Platfrom Win32/Win64
 	TSharedPtr<FString> GetSelectedPlatfrom()const;
 	// UseCmdEngine is Checked?
 	bool GetUseCmdEngine()const;
+	// Get All Launch Parameters
 	TArray<FString> GetAllLaunchParams()const;
 	FString CombineAllLaunchParams(const TArray<FString>& pAllParams)const;
 
@@ -83,6 +87,9 @@ public:
 	// open project directory
 	FReply BtnClickEventOpenProjectFileDir();
 
+	// read/write config
+	FReply BtnClickEventLoadConfig();
+	FReply BtnClickEventSaveConfig();
 	// open Developer website
 	void HyLinkClickEventOpenDeveloperWebsite();
 
@@ -98,10 +105,14 @@ public:
 	void UpdatePlatfromSelector(const FString& EnginePath, FString DefaultPlatfrom=TEXT(""));
 	// Update Selected Platfrom
 	void UpdateSelectedPlatfrom(const FString& Platfrom);
+	void UpdateSelectedProject(const FString& ProjectPath=TEXT(""));
 	// Update Use UEEditor-cmd
-	void UpdateUseCmdEngine(bool pUseCmd);
+	void UpdateUseCmdEngine(bool pUseCmd=false);
 
-	void UpdateLaunchParams(TArray<FString> pParamsArray);
+	void UpdateLaunchParams(const TArray<FString>& pParamsArray = TArray<FString>{});
+
+	// Update ALL
+	void UpdateAll(const FUELaunchConf& conf);
 protected:
 
 	// Create/Add a Editable Parameter Box.
@@ -111,7 +122,9 @@ protected:
 	// Launch Engine
 	void EngineLauncher(const FString& EnginePath, const FString& Params)const;
 
-
+	FUELaunchConf GetLaunchConf()const;
+	FString SerializationConf(const FUELaunchConf& SaveConfig);
+	FUELaunchConf DeSerializationConf(const FString& jsonConf);
 private:
 	// Main panel scrollbox
 	TSharedPtr<SScrollBox> SrbWidgetMain;
@@ -128,6 +141,7 @@ private:
 	TSharedPtr<SButton> BtnOpenVS;
 	TSharedPtr<SButton> BtnLaunchProject;
 
+
 	// UseCmd SCheckedBox
 	TSharedPtr<SCheckBox> CbUseCmdEngine;
 	// Button Text
@@ -135,4 +149,5 @@ private:
 	mutable FString LaunchProjectBtnText{ TEXT("Launch Configuration") };
 
 	bool bUseCmdEngine = false;
+
 };
