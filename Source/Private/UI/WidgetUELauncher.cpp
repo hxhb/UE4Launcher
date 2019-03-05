@@ -324,8 +324,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 	];
 	// initialize SComboBox
 	{
-		TMap<FString, FString> EngineMap;
-		FDesktopPlatformModule::Get()->EnumerateEngineInstallations(EngineMap);
+		TMap<FString, FString> EngineMap = GetAllRegistedEngineMap();
 		UpdateEngineSelector(EngineMap);
 	}
 
@@ -594,7 +593,7 @@ void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& Engin
 	{
 		bool bUseDefaultEngine=false;
 		RegisterEngineMap = EngineMap;
-		for (const FString& EnginePath : GetAllRegistedEngine(RegisterEngineMap))
+		for (const FString& EnginePath : GetAllRegistedEngineList(RegisterEngineMap))
 		{
 			SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
 			if (!bUseDefaultEngine)
@@ -685,19 +684,24 @@ TSharedRef<SWidget> MakeWidgetUELauncher()
 		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
 }
 
-TArray<FString> GetAllRegistedEngine(TMap<FString,FString> &outs)
+TMap<FString, FString> GetAllRegistedEngineMap()
 {
-	FDesktopPlatformModule::Get()->EnumerateEngineInstallations(outs);
-	TArray<FString> EngineAllKey;
-	outs.GetKeys(EngineAllKey);
+	TMap<FString, FString> resault;
+	FDesktopPlatformModule::Get()->EnumerateEngineInstallations(resault);
 
+	return resault;
+}
+TArray<FString> GetAllRegistedEngineList(const TMap<FString, FString>& pEngineMap)
+{
 	TArray<FString> resault;
+	TArray<FString> EngineAllKey;
+	pEngineMap.GetKeys(EngineAllKey);
 
 	for (FString& Key : EngineAllKey)
 	{
-		if (outs.Find(Key))
+		if (pEngineMap.Find(Key))
 		{
-			resault.Add(*outs.Find(Key));
+			resault.Add(*pEngineMap.Find(Key));
 		}
 	}
 	return resault;

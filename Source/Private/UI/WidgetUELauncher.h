@@ -6,7 +6,8 @@
 /** @return a new Drag and Drop test widget */
 TSharedRef<SWidget> MakeWidgetUELauncher();
 
-TArray<FString> GetAllRegistedEngine(TMap<FString, FString> &outs);
+TArray<FString> GetAllRegistedEngineList(const TMap<FString, FString>& pEngineMap);
+TMap<FString, FString> GetAllRegistedEngineMap();
 
 class SWidgetUELauncher :public SCompoundWidget
 {
