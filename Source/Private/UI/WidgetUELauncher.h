@@ -90,6 +90,7 @@ public:
 	// read/write config
 	FReply BtnClickEventLoadConfig();
 	FReply BtnClickEventSaveConfig();
+	FReply BtnClickEventClearConfig();
 	// open Developer website
 	void HyLinkClickEventOpenDeveloperWebsite();
 
@@ -117,7 +118,7 @@ protected:
 
 	// Create/Add a Editable Parameter Box.
 	TSharedRef<SEditableTextBox> CreateEditableTextBox(const FString& TextContent);
-	void AddParamTextBoxToSlot(const FString& TextContent);
+	void AddParamTextBoxToSlot(const FString& TextContent=TEXT(""));
 
 	// Launch Engine
 	void EngineLauncher(const FString& EnginePath, const FString& Params)const;

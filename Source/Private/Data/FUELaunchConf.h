@@ -12,5 +12,5 @@ struct FUELaunchConf
 	FString LaunchPlatfrom;
 	FString LaunchProject;
 	TArray<FString> LaunchParams;
-	bool bUseCmdEngine;
+	bool bUseCmdEngine=false;
 };

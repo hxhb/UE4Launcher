@@ -343,18 +343,30 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 							.Content()
 							[
 								SNew(STextBlock)
-								.Text(LOCTEXT("HeaderContentLabel", "Launch"))
+								.Text(LOCTEXT("HeaderContentLabel", "Clear/Launch"))
 							]
 						]
 
 					// Launch Button
 					+ SGridPanel::Slot(0, 7)
 						[
-							SAssignNew(BtnLaunchProject, SButton)
-							.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
-							.HAlign(HAlign_Center)
-							.VAlign(VAlign_Center)
-							.OnClicked(this, &SWidgetUELauncher::BtnClickEventLaunchProject)
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							[
+								SNew(SButton)
+								.Text(LOCTEXT("ClearConfig","Clear Config"))
+								.HAlign(HAlign_Center)
+								.VAlign(VAlign_Center)
+								.OnClicked(this, &SWidgetUELauncher::BtnClickEventClearConfig)
+							]
+							+SHorizontalBox::Slot()
+							[
+								SAssignNew(BtnLaunchProject, SButton)
+								.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
+								.HAlign(HAlign_Center)
+								.VAlign(VAlign_Center)
+								.OnClicked(this, &SWidgetUELauncher::BtnClickEventLaunchProject)
+							]
 						]
 					]
 				]
@@ -381,12 +393,6 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 	// initialize
 	TMap<FString, FString> EngineMap = GetAllRegistedEngineMap();
 	{
-		
-		//UpdateEngineSelector(EngineMap,TEXT("D:/UnrealEngine/Offical_Source/4.18"));
-		//UpdatePlatfromSelector(GetSelectedEnginePath(), TEXT("Win32"));
-		//UpdateSelectedProject(TEXT("C:/Users/visionsmile/Documents/Unreal Projects/OldScandinaviaMedievalVil/OldScandinaviaMedievalVil.uproject"));
-		//UpdateLaunchParams({ TEXT("-game"),TEXT("-LOG") });
-		//UpdateUseCmdEngine(true);
 		UpdateEngineSelector(EngineMap);
 		UpdatePlatfromSelector(GetSelectedEnginePath());
 		UpdateSelectedProject();
@@ -550,6 +556,12 @@ FReply SWidgetUELauncher::BtnClickEventOpenVS()
 	return FReply::Handled();
 }
 
+FReply SWidgetUELauncher::BtnClickEventClearConfig()
+{
+	FUELaunchConf DefaultConfig;
+	UpdateAll(DefaultConfig);
+	return FReply::Handled();
+}
 FReply SWidgetUELauncher::BtnClickEventLoadConfig()
 {
 	FString SelectedLoadConfigPath;
@@ -791,6 +803,7 @@ void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& Engin
 		bool bUseDefaultEngine=false;
 		int32 DefaultIndex = 0;
 		RegisterEngineMap = EngineMap;
+		SelectorInstalledEngineList.Empty();
 		for (const FString& EnginePath : GetAllRegistedEngineList(RegisterEngineMap))
 		{
 			int32 index=SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
@@ -871,8 +884,9 @@ void SWidgetUELauncher::UpdateUseCmdEngine(bool pUseCmd)
 
 void SWidgetUELauncher::UpdateLaunchParams(const TArray<FString>& pParamsArray)
 {
-	if (!!pParamsArray.Num())
-		SrbWidgetLaunchParams->ClearChildren();
+	SrbWidgetLaunchParams->ClearChildren();
+	if (!pParamsArray.Num())
+		AddParamTextBoxToSlot();
 	for (const auto& ParamItem : pParamsArray)
 	{
 		if (!ParamItem.IsEmpty())
