@@ -89,7 +89,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 									[
 										SNew(SHyperlink)
 										.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
-									.OnNavigate(this, &SWidgetUELauncher::OpenAboutMeWebsite)
+									.OnNavigate(this, &SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite)
 									]
 
 								]
@@ -118,7 +118,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											SAssignNew(BtnLaunchEngine, SButton)
 											//.Text(LOCTEXT("LaunchEngine", "Launch"))
 											.Text(this, &SWidgetUELauncher::GetLaunchEngineBtnText)
-											.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchEngine)
+											.OnClicked(this, &SWidgetUELauncher::BtnClickEventLaunchEngine)
 										]
 										+ SHorizontalBox::Slot()
 											.HAlign(HAlign_Left)
@@ -126,7 +126,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											[
 												SAssignNew(BtnOpenVS, SButton)
 												.Text(LOCTEXT("OpenVS", "OpenVS"))
-												.OnClicked(this, &SWidgetUELauncher::ClickEventOpenVS)
+												.OnClicked(this, &SWidgetUELauncher::BtnClickEventOpenVS)
 											]
 									]
 							]
@@ -149,7 +149,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 								.Padding(2.0f)
 								[
 									SAssignNew(CmdWidgetPlatfromSelector, SComboBox<TSharedPtr<FString>>)
-									.OptionsSource(&SelectorInstalledPlatfromList)
+									.OptionsSource(&SelectorPlatfromList)
 									.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbPlatfromSelectionChanged)
 									.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbPlatfromGenerateWidget)
 									[
@@ -171,7 +171,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 									.HAlign(HAlign_Left)
 									.Padding(2.0f)
 									[
-										SNew(SCheckBox)
+										SAssignNew(CbUseCmdEngine, SCheckBox)
 										.IsChecked(this, &SWidgetUELauncher::HandleUseCmdCBStateIsChecked, &bUseCmdEngine)
 										.OnCheckStateChanged(this, &SWidgetUELauncher::HandleUseCmdCBStateChanged, &bUseCmdEngine)
 										[
@@ -217,7 +217,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											.Text(LOCTEXT("SelectProjectFile", "Select"))
 											.HAlign(HAlign_Center)
 											.VAlign(VAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileClicked)
+											.OnClicked(this, &SWidgetUELauncher::BtnClickEventOpenProjectFile)
 										]
 									+ SHorizontalBox::Slot()
 										//.FillWidth(0.3f)
@@ -227,7 +227,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
 											.HAlign(HAlign_Center)
 											.VAlign(VAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileDirClicked)
+											.OnClicked(this, &SWidgetUELauncher::BtnClickEventOpenProjectFileDir)
 										]
 								]
 
@@ -266,14 +266,14 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											SNew(SButton)
 											.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
 											.HAlign(HAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::ClearAllLaunchParamsButtonClicked)
+											.OnClicked(this, &SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton)
 										]
 										+ SHorizontalBox::Slot()
 											[
 												SNew(SButton)
 												.Text(LOCTEXT("AddParameter", "Add Parameter"))
 												.HAlign(HAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::AddLaunchParamButtonClicked)
+												.OnClicked(this, &SWidgetUELauncher::BtnClickEventAddLaunchParamButton)
 											]
 									]
 							]
@@ -298,7 +298,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 							.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
 							.HAlign(HAlign_Center)
 							.VAlign(VAlign_Center)
-							.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchProject)
+							.OnClicked(this, &SWidgetUELauncher::BtnClickEventLaunchProject)
 						]
 					]
 				]
@@ -324,23 +324,14 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 	];
 	// initialize SComboBox
 	{
-		for (const FString& EnginePath : GetAllRegistedEngine(RegisterEngineMap))
-		{
-			SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
-		}
-		CmbSelectCurrentEngine = SelectorInstalledEngineList[0];
-
-		CmdWidgetEngineSelector->RefreshOptions();
-		CmdWidgetEngineSelector->SetSelectedItem(CmbSelectCurrentEngine);
-		UpdatePlatfromSelector(CmbSelectCurrentEngine);
+		TMap<FString, FString> EngineMap;
+		FDesktopPlatformModule::Get()->EnumerateEngineInstallations(EngineMap);
+		UpdateEngineSelector(EngineMap);
 	}
 
 }
 
-void SWidgetUELauncher::OpenAboutMeWebsite()
-{
-	FPlatformProcess::LaunchURL(TEXT("https://imzlp.me"), NULL, NULL);
-}
+
 
 // Engine
 void SWidgetUELauncher::HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
@@ -378,31 +369,65 @@ FText SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText() const
 	return CmbSelectCurrentPlatfrom.IsValid() ? FText::FromString(*CmbSelectCurrentPlatfrom) : FText::GetEmpty();
 }
 
-void SWidgetUELauncher::UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged)
+ECheckBoxState SWidgetUELauncher::HandleUseCmdCBStateIsChecked(bool* CheckBox) const
 {
-	SelectorInstalledPlatfromList.Empty();
-	TSharedPtr<FString> Win32Platfrom = MakeShareable(new FString(TEXT("Win32")));
-	TSharedPtr<FString> Win64Platfrom = MakeShareable(new FString(TEXT("Win64")));
+	return (*CheckBox)
+		? ECheckBoxState::Checked
+		: ECheckBoxState::Unchecked;
+}
+void SWidgetUELauncher::HandleUseCmdCBStateChanged(ECheckBoxState NewState, bool* CheckBoxThatChanged)
+{
+	*CheckBoxThatChanged = (NewState == ECheckBoxState::Checked);
+}
 
-	if (FPaths::FileExists(FPaths::Combine(*EngineChanged, TEXT("/Engine/Binaries/"), *Win64Platfrom, TEXT("/UE4Editor.exe"))))
-		SelectorInstalledPlatfromList.Add(Win64Platfrom);
-	if (FPaths::FileExists(FPaths::Combine(*EngineChanged, TEXT("/Engine/Binaries/"), *Win32Platfrom, TEXT("/UE4Editor.exe"))))
-		SelectorInstalledPlatfromList.Add(Win32Platfrom);
-	if(SelectorInstalledPlatfromList.Num()>0)
+
+
+void SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite()
+{
+	FPlatformProcess::LaunchURL(TEXT("https://imzlp.me"), NULL, NULL);
+}
+
+
+FReply SWidgetUELauncher::BtnClickEventAddLaunchParamButton()
+{
+	AddParamTextBoxToSlot();
+	return FReply::Handled();
+}
+FReply SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton()
+{
+	SrbWidgetLaunchArgs->ClearChildren();
+	AddParamTextBoxToSlot();
+	return FReply::Handled();
+}
+
+
+FReply SWidgetUELauncher::BtnClickEventLaunchEngine()
+{
+
+	EngineLauncher(GetSelectedEnginePath(), TEXT(""));
+	return FReply::Handled();
+}
+
+FReply SWidgetUELauncher::BtnClickEventLaunchProject()
+{
+	FString EnginePath=GetSelectedEnginePath();
+	FString ProjectPath = GetSelectedProjectPath();
+	FString AllParams = CombineAllLaunchParams(GetAllLaunchParams());
+
+	if(!(EnginePath.Len()>0 && FPaths::FileExists(*EnginePath)))
+		return FReply::Handled();
+	if (!(EnginePath.Len() > 0 && FPaths::FileExists(*EnginePath)))
 	{
-		CmbSelectCurrentPlatfrom = SelectorInstalledPlatfromList[0];
-
-		CmdWidgetPlatfromSelector->RefreshOptions();
-		CmdWidgetPlatfromSelector->SetSelectedItem(CmbSelectCurrentPlatfrom);
+		ProjectPath.Empty();
 	}
-}
+	{
+		FString Params = FString::Printf(TEXT("\"%s\" %s"), *ProjectPath, *AllParams);
+		EngineLauncher(EnginePath, Params);
+	}
 
-TSharedPtr<FString> SWidgetUELauncher::GetSelectedPlatfrom()const
-{
-	return CmbSelectCurrentPlatfrom;
+	return FReply::Handled();
 }
-
-FReply SWidgetUELauncher::OnOpenProjectFileClicked()
+FReply SWidgetUELauncher::BtnClickEventOpenProjectFile()
 {
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 
@@ -429,7 +454,7 @@ FReply SWidgetUELauncher::OnOpenProjectFileClicked()
 	return FReply::Handled();
 }
 
-FReply SWidgetUELauncher::OnOpenProjectFileDirClicked()
+FReply SWidgetUELauncher::BtnClickEventOpenProjectFileDir()
 {
 	FString FinalCommdParas = TEXT("/e,/root,");
 	TArray<FString> OutArray;
@@ -451,116 +476,65 @@ FReply SWidgetUELauncher::OnOpenProjectFileDirClicked()
 	FPlatformProcess::CreateProc(TEXT("explorer "), *FinalCommdParas, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
 }
-FText SWidgetUELauncher::GetProjectFileText()const
+
+FReply SWidgetUELauncher::BtnClickEventOpenVS()
 {
-	return FText::FromString(OpenProjectFilePath);
-}
-
-FReply SWidgetUELauncher::AddLaunchParamButtonClicked()
-{
-	AddParamTextBoxToSlot();
-	return FReply::Handled();
-}
-FReply SWidgetUELauncher::ClearAllLaunchParamsButtonClicked()
-{
-	SrbWidgetLaunchArgs->ClearChildren();
-	AddParamTextBoxToSlot();
-	return FReply::Handled();
-}
-
-TSharedRef<SWidget> SWidgetUELauncher::AddParamTextBox()
-{
-	return SNew(SEditableTextBox)
-			.HintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."));
-}
-
-void SWidgetUELauncher::AddParamTextBoxToSlot()
-{
-	SrbWidgetLaunchArgs->AddSlot()
-		.Padding(0.0f, 3.0f)
-		[
-			AddParamTextBox()
-		];
-	SrbWidgetLaunchArgs->ScrollToEnd();
-	SrbWidgetMain->ScrollToEnd();
-}
-
-FReply SWidgetUELauncher::ClickEventLaunchEngine()
-{
-
-	EngineLauncher(GetSelectedEnginePath(), TEXT(""));
-	return FReply::Handled();
-}
-
-FReply SWidgetUELauncher::ClickEventLaunchProject()
-{
-	FString EnginePath=GetSelectedEnginePath();
-	FString ProjectPath = GetSelectedProjectPath();
-	FString AllParams = CombineAllParams(GetAllParams());
-
-	if(!(EnginePath.Len()>0 && FPaths::FileExists(*EnginePath)))
-		return FReply::Handled();
-	if (!(EnginePath.Len() > 0 && FPaths::FileExists(*EnginePath)))
-	{
-		ProjectPath.Empty();
-	}
-	{
-		FString Params = FString::Printf(TEXT("\"%s\" %s"), *ProjectPath, *AllParams);
-		EngineLauncher(EnginePath, Params);
-	}
-
-	return FReply::Handled();
-}
-
-FReply SWidgetUELauncher::ClickEventOpenVS()
-{
-	FString ue4sln = GetCurrentSelectEngine() + TEXT("//UE4.sln");
+	FString ue4sln = GetSelectedEngine() + TEXT("//UE4.sln");
 	FString FinalCmdParams = TEXT("/c start devenv.exe ") + ue4sln;
 	FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
 }
 
-void SWidgetUELauncher::UpdateOpenVSButton(TSharedPtr<FString> EnginePath)
-{
-	bool IsLauncherInstalledEngine = FPaths::FileExists(*EnginePath + TEXT("//Engine//Build//InstalledBuild.txt"));
-	{
-		BtnOpenVS->SetEnabled(!IsLauncherInstalledEngine);
-		if(!IsLauncherInstalledEngine)
-			BtnOpenVS->SetVisibility(EVisibility::Visible);
-		else
-			BtnOpenVS->SetVisibility(EVisibility::Hidden);
-	}
-}
-void SWidgetUELauncher::EngineLauncher(const FString& EnginePath, const FString& Params)const
-{
-	FPlatformProcess::CreateProc(*EnginePath, *Params, true, false, false, NULL, NULL, NULL, NULL, NULL);
-}
 
 
-FString SWidgetUELauncher::GetCurrentSelectEngine()const
+TSharedPtr<FString> SWidgetUELauncher::GetSelectedPlatfrom()const
+{
+	return CmbSelectCurrentPlatfrom;
+}
+
+FText SWidgetUELauncher::GetProjectFileText()const
+{
+	return FText::FromString(OpenProjectFilePath);
+}
+
+FString SWidgetUELauncher::GetSelectedEngine()const
 {
 	return *CmbSelectCurrentEngine;
 }
 FString SWidgetUELauncher::GetSelectedEnginePath()const
 {
 	TSharedPtr<FString> Platfrom = GetSelectedPlatfrom();
-	FString EngineProgramName = UseCmdEngine() ? TEXT("UE4Editor-cmd.exe") : TEXT("UE4Editor.exe");
-	FString resault(FPaths::Combine(*GetCurrentSelectEngine(), TEXT("Engine/Binaries/"),*Platfrom,*EngineProgramName));
+	FString EngineProgramName = GetUseCmdEngine() ? TEXT("UE4Editor-cmd.exe") : TEXT("UE4Editor.exe");
+	FString resault(FPaths::Combine(*GetSelectedEngine(), TEXT("Engine/Binaries/"),*Platfrom,*EngineProgramName));
 	return resault;
 }
 
+FString SWidgetUELauncher::GetSelectedProjectPath()const
+{
+	return OpenProjectFilePath;
+}
+
+FText SWidgetUELauncher::GetLaunchEngineBtnText()const
+{
+	return FText::FromString(LaunchEngineBtnText);
+}
+
+FText SWidgetUELauncher::GetLaunchProjectBtnText()const
+{
+	return FText::FromString(LaunchProjectBtnText);
+}
 #include "../Tools/HackPrivateMember.hpp"
 DECL_HACK_PRIVATE_DATA(SScrollBox, TSharedPtr<SScrollPanel>, ScrollPanel)
 
-TArray<FString> SWidgetUELauncher::GetAllParams()const
+TArray<FString> SWidgetUELauncher::GetAllLaunchParams()const
 {
 	TArray<FString> resault;
 
 	SScrollBox* ScrollboxWidget = &*SrbWidgetLaunchArgs;
-	SPanel* ScrollPanelWidget=reinterpret_cast<SPanel*>(&*(GET_VAR_PRIVATE_DATA_MEMBER(ScrollboxWidget, SScrollBox, ScrollPanel)));
+	SPanel* ScrollPanelWidget = reinterpret_cast<SPanel*>(&*(GET_VAR_PRIVATE_DATA_MEMBER(ScrollboxWidget, SScrollBox, ScrollPanel)));
 	FChildren* ScrollBoxChildren = ScrollPanelWidget->GetChildren();
 
-	if (ScrollBoxChildren->Num()>0)
+	if (ScrollBoxChildren->Num() > 0)
 	{
 		for (int32 index = 0; index < ScrollBoxChildren->Num(); index++)
 		{
@@ -580,7 +554,7 @@ TArray<FString> SWidgetUELauncher::GetAllParams()const
 	return resault;
 }
 
-FString SWidgetUELauncher::CombineAllParams(const TArray<FString>& pAllParams)const
+FString SWidgetUELauncher::CombineAllLaunchParams(const TArray<FString>& pAllParams)const
 {
 	FString resault;
 
@@ -593,38 +567,108 @@ FString SWidgetUELauncher::CombineAllParams(const TArray<FString>& pAllParams)co
 	return resault;
 }
 
-FString SWidgetUELauncher::GetSelectedProjectPath()const
-{
-	return OpenProjectFilePath;
-}
-
-
-FText SWidgetUELauncher::GetLaunchEngineBtnText()const
-{
-	return FText::FromString(LaunchEngineBtnText);
-}
-
-FText SWidgetUELauncher::GetLaunchProjectBtnText()const
-{
-	return FText::FromString(LaunchProjectBtnText);
-}
-
-
-ECheckBoxState SWidgetUELauncher::HandleUseCmdCBStateIsChecked(bool* CheckBox) const
-{
-	return (*CheckBox)
-		? ECheckBoxState::Checked
-		: ECheckBoxState::Unchecked;
-}
-void SWidgetUELauncher::HandleUseCmdCBStateChanged(ECheckBoxState NewState, bool* CheckBoxThatChanged)
-{
-	*CheckBoxThatChanged = (NewState == ECheckBoxState::Checked);
-}
-
-bool SWidgetUELauncher::UseCmdEngine()const
+bool SWidgetUELauncher::GetUseCmdEngine()const
 {
 	return bUseCmdEngine;
 }
+
+TSharedRef<SWidget> SWidgetUELauncher::CreateEditableTextBox()
+{
+	return SNew(SEditableTextBox)
+		.HintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."));
+}
+
+void SWidgetUELauncher::AddParamTextBoxToSlot()
+{
+	SrbWidgetLaunchArgs->AddSlot()
+		.Padding(0.0f, 3.0f)
+		[
+			CreateEditableTextBox()
+		];
+	SrbWidgetLaunchArgs->ScrollToEnd();
+	SrbWidgetMain->ScrollToEnd();
+}
+void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& EngineMap, FString DefaultEngine)
+{
+	// initialize SComboBox
+	{
+		bool bUseDefaultEngine=false;
+		RegisterEngineMap = EngineMap;
+		for (const FString& EnginePath : GetAllRegistedEngine(RegisterEngineMap))
+		{
+			SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
+			if (!bUseDefaultEngine)
+			{
+				bUseDefaultEngine = !DefaultEngine.IsEmpty() && EnginePath.Equals(DefaultEngine);
+			}
+		}
+
+		CmbSelectCurrentEngine = bUseDefaultEngine ? MakeShareable(new FString(DefaultEngine)) : SelectorInstalledEngineList[0];
+
+		CmdWidgetEngineSelector->RefreshOptions();
+		CmdWidgetEngineSelector->SetSelectedItem(CmbSelectCurrentEngine);
+		UpdatePlatfromSelector(CmbSelectCurrentEngine);
+	}
+}
+void SWidgetUELauncher::UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged)
+{
+
+#define EXECUTABLE_FORMAT TEXT(".exe")
+
+	FString ue4editor(TEXT("UE4Editor"));
+	ue4editor.Append(EXECUTABLE_FORMAT);
+	SelectorPlatfromList.Empty();
+	TArray<TSharedPtr<FString>> Platfroms ={
+		MakeShareable(new FString(TEXT("Win64"))),
+		MakeShareable(new FString(TEXT("Win32")))
+	};
+
+	for (const auto& PlatfromItem : Platfroms)
+	{
+		if (FPaths::FileExists(FPaths::Combine(*EngineChanged ,TEXT("Engine/Binaries") ,*PlatfromItem, ue4editor)))
+		{
+			SelectorPlatfromList.Add(PlatfromItem);
+		}
+	}
+	if (SelectorPlatfromList.Num() > 0)
+	{
+		CmbSelectCurrentPlatfrom = SelectorPlatfromList[0];
+
+		CmdWidgetPlatfromSelector->RefreshOptions();
+		CmdWidgetPlatfromSelector->SetSelectedItem(CmbSelectCurrentPlatfrom);
+	}
+
+#undef EXECUTABLE_FORMAT
+}
+void SWidgetUELauncher::UpdateOpenVSButton(TSharedPtr<FString> EnginePath)
+{
+	bool IsLauncherInstalledEngine = FPaths::FileExists(*EnginePath + TEXT("//Engine//Build//InstalledBuild.txt"));
+	{
+		BtnOpenVS->SetEnabled(!IsLauncherInstalledEngine);
+		if (!IsLauncherInstalledEngine)
+			BtnOpenVS->SetVisibility(EVisibility::Visible);
+		else
+			BtnOpenVS->SetVisibility(EVisibility::Hidden);
+	}
+}
+
+void SWidgetUELauncher::UpdateUseCmdEngine(bool pUseCmd)
+{
+	bUseCmdEngine = pUseCmd;
+	ECheckBoxState local_IsChecked = GetUseCmdEngine() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+	CbUseCmdEngine->SetIsChecked(local_IsChecked);
+}
+
+
+
+
+
+
+void SWidgetUELauncher::EngineLauncher(const FString& EnginePath, const FString& Params)const
+{
+	FPlatformProcess::CreateProc(*EnginePath, *Params, true, false, false, NULL, NULL, NULL, NULL, NULL);
+}
+
 
 void SWidgetUELauncher::OnProjectFileTextBoxChanged(const FText& NewText)
 {
