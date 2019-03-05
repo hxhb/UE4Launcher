@@ -136,50 +136,50 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						[
 							SNew(SHorizontalBox)
 							+ SHorizontalBox::Slot()
-						.AutoWidth()
-						.HAlign(HAlign_Left)
-						.VAlign(VAlign_Center)
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("SelectPlatfrom", "Platfrom:"))
-						]
-					+ SHorizontalBox::Slot()
-						.AutoWidth()
-						.HAlign(HAlign_Left)
-						.Padding(2.0f)
-						[
-							SAssignNew(CmdWidgetPlatfromSelector, SComboBox<TSharedPtr<FString>>)
-							.OptionsSource(&SelectorInstalledPlatfromList)
-						.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbPlatfromSelectionChanged)
-						.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbPlatfromGenerateWidget)
-						[
-							SNew(STextBlock)
-							.Text(this, &SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText)
-						]
-						]
-					+ SHorizontalBox::Slot()
-						.AutoWidth()
-						.HAlign(HAlign_Left)
-						.VAlign(VAlign_Center)
-						.Padding(5.0f, 0.0f, 0.0f, 0.0f)
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("UseCmdEngine", "UseCmd:"))
-						]
-					+ SHorizontalBox::Slot()
-						.AutoWidth()
-						.HAlign(HAlign_Left)
-						.Padding(2.0f)
-						[
-							SNew(SCheckBox)
-							.IsChecked(this, &SWidgetUELauncher::HandleUseCmdCBStateIsChecked, &bUseCmdEngine)
-						.OnCheckStateChanged(this, &SWidgetUELauncher::HandleUseCmdCBStateChanged, &bUseCmdEngine)
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("UE4EditorCMD", "UE4Editor-cmd"))
+								.AutoWidth()
+								.HAlign(HAlign_Left)
+								.VAlign(VAlign_Center)
+								[
+									SNew(STextBlock)
+									.Text(LOCTEXT("SelectPlatfrom", "Platfrom:"))
+								]
+							+ SHorizontalBox::Slot()
+								.AutoWidth()
+								.HAlign(HAlign_Left)
+								.Padding(2.0f)
+								[
+									SAssignNew(CmdWidgetPlatfromSelector, SComboBox<TSharedPtr<FString>>)
+									.OptionsSource(&SelectorInstalledPlatfromList)
+									.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbPlatfromSelectionChanged)
+									.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbPlatfromGenerateWidget)
+									[
+										SNew(STextBlock)
+										.Text(this, &SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText)
+									]
+								]
+								+ SHorizontalBox::Slot()
+									.AutoWidth()
+									.HAlign(HAlign_Left)
+									.VAlign(VAlign_Center)
+									.Padding(5.0f, 0.0f, 0.0f, 0.0f)
+									[
+										SNew(STextBlock)
+										.Text(LOCTEXT("UseCmdEngine", "UseCmd:"))
+									]
+								+ SHorizontalBox::Slot()
+									.AutoWidth()
+									.HAlign(HAlign_Left)
+									.Padding(2.0f)
+									[
+										SNew(SCheckBox)
+										.IsChecked(this, &SWidgetUELauncher::HandleUseCmdCBStateIsChecked, &bUseCmdEngine)
+										.OnCheckStateChanged(this, &SWidgetUELauncher::HandleUseCmdCBStateChanged, &bUseCmdEngine)
+										[
+											SNew(STextBlock)
+											.Text(LOCTEXT("UE4EditorCMD", "UE4Editor-cmd"))
 
-						]
-						]
+										]
+									]
 						]
 					// open project location
 					+ SGridPanel::Slot(0, 3)
@@ -188,48 +188,48 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						[
 							SNew(SVerticalBox)
 							+ SVerticalBox::Slot()
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("UE Project File", "Select your .uproject file:"))
-						]
-					+ SVerticalBox::Slot()
-						.AutoHeight()
-						.Padding(5.0f)
-						[
-							// show uproject file path
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-						//.AutoWidth()
-						.FillWidth(1.0f)
-						[
-							SNew(SEditableTextBox)
-							.Text(this, &SWidgetUELauncher::GetProjectFileText)
-						.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
-						.OnTextChanged(this, &SWidgetUELauncher::OnProjectFileTextBoxChanged)
+								[
+									SNew(STextBlock)
+									.Text(LOCTEXT("UE Project File", "Select your .uproject file:"))
+								]
+							+ SVerticalBox::Slot()
+								.AutoHeight()
+								.Padding(5.0f)
+								[
+									// show uproject file path
+									SNew(SHorizontalBox)
+									+ SHorizontalBox::Slot()
+										//.AutoWidth()
+										.FillWidth(1.0f)
+										[
+											SNew(SEditableTextBox)
+											.Text(this, &SWidgetUELauncher::GetProjectFileText)
+										.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
+										.OnTextChanged(this, &SWidgetUELauncher::OnProjectFileTextBoxChanged)
 
-						]
-					// open uproject file button
-					+ SHorizontalBox::Slot()
-						//.FillWidth(0.3f)
-						.AutoWidth()
-						[
-							SNew(SButton)
-							.Text(LOCTEXT("SelectProjectFile", "Select"))
-						.HAlign(HAlign_Center)
-						.VAlign(VAlign_Center)
-						.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileClicked)
-						]
-					+ SHorizontalBox::Slot()
-						//.FillWidth(0.3f)
-						.AutoWidth()
-						[
-							SNew(SButton)
-							.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
-						.HAlign(HAlign_Center)
-						.VAlign(VAlign_Center)
-						.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileDirClicked)
-						]
-						]
+										]
+									// open uproject file button
+									+ SHorizontalBox::Slot()
+										//.FillWidth(0.3f)
+										.AutoWidth()
+										[
+											SNew(SButton)
+											.Text(LOCTEXT("SelectProjectFile", "Select"))
+											.HAlign(HAlign_Center)
+											.VAlign(VAlign_Center)
+											.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileClicked)
+										]
+									+ SHorizontalBox::Slot()
+										//.FillWidth(0.3f)
+										.AutoWidth()
+										[
+											SNew(SButton)
+											.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
+											.HAlign(HAlign_Center)
+											.VAlign(VAlign_Center)
+											.OnClicked(this, &SWidgetUELauncher::OnOpenProjectFileDirClicked)
+										]
+								]
 
 						]
 
@@ -238,44 +238,45 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						[
 							SNew(SVerticalBox)
 							+ SVerticalBox::Slot()
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("LauncherParams", "Launch Parameters:"))
-						]
-					+ SVerticalBox::Slot()
-						.AutoHeight()
-						.Padding(3.0f)
-						[
-							// init create a input box
-							SAssignNew(SrbWidgetLaunchArgs, SScrollBox)
-							+ SScrollBox::Slot()
-						.Padding(0.0f, 3.0f)
-						[
-							SNew(SEditableTextBox)
-							.HintText(LOCTEXT("LaunchParam_0", "Input Project Launch paramater."))
-						]
-						]
-					// add a new input param box
-					+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-						[
-							SNew(SButton)
-							.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
-						.HAlign(HAlign_Center)
-						.OnClicked(this, &SWidgetUELauncher::ClearAllLaunchParamsButtonClicked)
-						]
-					+ SHorizontalBox::Slot()
-						[
-							SNew(SButton)
-							.Text(LOCTEXT("AddParameter", "Add Parameter"))
-						.HAlign(HAlign_Center)
-						.OnClicked(this, &SWidgetUELauncher::AddLaunchParamButtonClicked)
-						]
-						]
-						]
+								.AutoHeight()
+								[
+									SNew(STextBlock)
+									.Text(LOCTEXT("LauncherParams", "Launch Parameters:"))
+								]
+							+ SVerticalBox::Slot()
+								.AutoHeight()
+								.Padding(3.0f)
+								[
+									// init create a input box
+									SAssignNew(SrbWidgetLaunchArgs, SScrollBox)
+									+ SScrollBox::Slot()
+									.Padding(0.0f, 3.0f)
+									[
+										SNew(SEditableTextBox)
+										.HintText(LOCTEXT("LaunchParam_0", "Input Project Launch paramater."))
+									]
+								]
+								// add a new input param box
+								+ SVerticalBox::Slot()
+									.AutoHeight()
+									[
+										SNew(SHorizontalBox)
+										+ SHorizontalBox::Slot()
+										[
+											SNew(SButton)
+											.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
+											.HAlign(HAlign_Center)
+											.OnClicked(this, &SWidgetUELauncher::ClearAllLaunchParamsButtonClicked)
+										]
+										+ SHorizontalBox::Slot()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("AddParameter", "Add Parameter"))
+												.HAlign(HAlign_Center)
+												.OnClicked(this, &SWidgetUELauncher::AddLaunchParamButtonClicked)
+											]
+									]
+							]
 
 					// SHeader
 					+ SGridPanel::Slot(0, 18)
@@ -283,11 +284,11 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						[
 							SNew(SHeader)
 							.HAlign(HAlign_Center)
-						.Content()
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("HeaderContentLabel", "Launch"))
-						]
+							.Content()
+							[
+								SNew(STextBlock)
+								.Text(LOCTEXT("HeaderContentLabel", "Launch"))
+							]
 						]
 
 					// Launch Button
@@ -295,11 +296,10 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 						[
 							SAssignNew(BtnLaunchProject, SButton)
 							.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
-						.HAlign(HAlign_Center)
-						.VAlign(VAlign_Center)
-						.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchProject)
+							.HAlign(HAlign_Center)
+							.VAlign(VAlign_Center)
+							.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchProject)
 						]
-
 					]
 				]
 
