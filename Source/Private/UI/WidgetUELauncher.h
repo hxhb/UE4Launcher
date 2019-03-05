@@ -93,17 +93,20 @@ public:
 	// Update Engine Selector
 	void UpdateEngineSelector(const TMap<FString, FString>& pEngineMap, FString DefaultEngine = TEXT(""));
 	// Updator
-	void UpdateOpenVSButton(TSharedPtr<FString> EnginePath);
+	void UpdateOpenVSButton(const FString& EnginePath);
 	// Update Platfrom Info from EnginePath
-	void UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged);
+	void UpdatePlatfromSelector(const FString& EnginePath, FString DefaultPlatfrom=TEXT(""));
+	// Update Selected Platfrom
+	void UpdateSelectedPlatfrom(const FString& Platfrom);
 	// Update Use UEEditor-cmd
 	void UpdateUseCmdEngine(bool pUseCmd);
 
+	void UpdateLaunchParams(TArray<FString> pParamsArray);
 protected:
 
 	// Create/Add a Editable Parameter Box.
-	TSharedRef<SWidget> CreateEditableTextBox();
-	void AddParamTextBoxToSlot();
+	TSharedRef<SEditableTextBox> CreateEditableTextBox(const FString& TextContent);
+	void AddParamTextBoxToSlot(const FString& TextContent);
 
 	// Launch Engine
 	void EngineLauncher(const FString& EnginePath, const FString& Params)const;
@@ -115,7 +118,7 @@ private:
 	TMap<FString, FString> RegisterEngineMap;
 
 	// Add Launch Parameter
-	TSharedPtr<SScrollBox> SrbWidgetLaunchArgs;
+	TSharedPtr<SScrollBox> SrbWidgetLaunchParams;
 
 	// open .uproject file
 	FString OpenProjectFilePath;

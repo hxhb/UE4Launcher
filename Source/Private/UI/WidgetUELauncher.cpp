@@ -248,7 +248,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 								.Padding(3.0f)
 								[
 									// init create a input box
-									SAssignNew(SrbWidgetLaunchArgs, SScrollBox)
+									SAssignNew(SrbWidgetLaunchParams, SScrollBox)
 									+ SScrollBox::Slot()
 									.Padding(0.0f, 3.0f)
 									[
@@ -322,10 +322,15 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 				]
 
 	];
+
 	// initialize SComboBox
 	{
 		TMap<FString, FString> EngineMap = GetAllRegistedEngineMap();
-		UpdateEngineSelector(EngineMap);
+		UpdateEngineSelector(EngineMap,TEXT("D:/UnrealEngine/Offical_Source/4.18"));
+		//UpdatePlatfromSelector(GetSelectedEnginePath(), TEXT("Win32"));
+		UpdateSelectedPlatfrom(TEXT("Win32"));
+		UpdateLaunchParams({ TEXT("-game"),TEXT("-LOG") });
+		UpdateUseCmdEngine(true);
 	}
 
 }
@@ -336,8 +341,8 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 void SWidgetUELauncher::HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
 {
 	CmbSelectCurrentEngine = NewSelection;
-	UpdatePlatfromSelector(CmbSelectCurrentEngine);
-	UpdateOpenVSButton(NewSelection);
+	UpdatePlatfromSelector(*CmbSelectCurrentEngine);
+	UpdateOpenVSButton(*NewSelection);
 }
 
 TSharedRef<SWidget> SWidgetUELauncher::HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem)
@@ -389,13 +394,13 @@ void SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite()
 
 FReply SWidgetUELauncher::BtnClickEventAddLaunchParamButton()
 {
-	AddParamTextBoxToSlot();
+	AddParamTextBoxToSlot(TEXT(""));
 	return FReply::Handled();
 }
 FReply SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton()
 {
-	SrbWidgetLaunchArgs->ClearChildren();
-	AddParamTextBoxToSlot();
+	SrbWidgetLaunchParams->ClearChildren();
+	AddParamTextBoxToSlot(TEXT(""));
 	return FReply::Handled();
 }
 
@@ -529,7 +534,7 @@ TArray<FString> SWidgetUELauncher::GetAllLaunchParams()const
 {
 	TArray<FString> resault;
 
-	SScrollBox* ScrollboxWidget = &*SrbWidgetLaunchArgs;
+	SScrollBox* ScrollboxWidget = &*SrbWidgetLaunchParams;
 	SPanel* ScrollPanelWidget = reinterpret_cast<SPanel*>(&*(GET_VAR_PRIVATE_DATA_MEMBER(ScrollboxWidget, SScrollBox, ScrollPanel)));
 	FChildren* ScrollBoxChildren = ScrollPanelWidget->GetChildren();
 
@@ -571,20 +576,21 @@ bool SWidgetUELauncher::GetUseCmdEngine()const
 	return bUseCmdEngine;
 }
 
-TSharedRef<SWidget> SWidgetUELauncher::CreateEditableTextBox()
+TSharedRef<SEditableTextBox> SWidgetUELauncher::CreateEditableTextBox(const FString& TextContent)
 {
 	return SNew(SEditableTextBox)
-		.HintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."));
+		.HintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
+		.Text(FText::FromString(TextContent));
 }
 
-void SWidgetUELauncher::AddParamTextBoxToSlot()
+void SWidgetUELauncher::AddParamTextBoxToSlot(const FString& TextContent)
 {
-	SrbWidgetLaunchArgs->AddSlot()
+	SrbWidgetLaunchParams->AddSlot()
 		.Padding(0.0f, 3.0f)
 		[
-			CreateEditableTextBox()
+			CreateEditableTextBox(TextContent)
 		];
-	SrbWidgetLaunchArgs->ScrollToEnd();
+	SrbWidgetLaunchParams->ScrollToEnd();
 	SrbWidgetMain->ScrollToEnd();
 }
 void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& EngineMap, FString DefaultEngine)
@@ -592,31 +598,32 @@ void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& Engin
 	// initialize SComboBox
 	{
 		bool bUseDefaultEngine=false;
+		int32 DefaultIndex = 0;
 		RegisterEngineMap = EngineMap;
 		for (const FString& EnginePath : GetAllRegistedEngineList(RegisterEngineMap))
 		{
-			SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
+			int32 index=SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
 			if (!bUseDefaultEngine)
 			{
 				bUseDefaultEngine = !DefaultEngine.IsEmpty() && EnginePath.Equals(DefaultEngine);
+				DefaultIndex = index;
 			}
 		}
 
-		CmbSelectCurrentEngine = bUseDefaultEngine ? MakeShareable(new FString(DefaultEngine)) : SelectorInstalledEngineList[0];
+		CmbSelectCurrentEngine = SelectorInstalledEngineList[DefaultIndex];
 
 		CmdWidgetEngineSelector->RefreshOptions();
 		CmdWidgetEngineSelector->SetSelectedItem(CmbSelectCurrentEngine);
-		UpdatePlatfromSelector(CmbSelectCurrentEngine);
+		//UpdatePlatfromSelector(*CmbSelectCurrentEngine);
 	}
 }
-void SWidgetUELauncher::UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged)
+void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString DefaultPlatfrom)
 {
 
 #define EXECUTABLE_FORMAT TEXT(".exe")
-
+	int32 DefaultPlatfromIndex=0;
 	FString ue4editor(TEXT("UE4Editor"));
 	ue4editor.Append(EXECUTABLE_FORMAT);
-	SelectorPlatfromList.Empty();
 	TArray<TSharedPtr<FString>> Platfroms ={
 		MakeShareable(new FString(TEXT("Win64"))),
 		MakeShareable(new FString(TEXT("Win32")))
@@ -624,14 +631,20 @@ void SWidgetUELauncher::UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged
 
 	for (const auto& PlatfromItem : Platfroms)
 	{
-		if (FPaths::FileExists(FPaths::Combine(*EngineChanged ,TEXT("Engine/Binaries") ,*PlatfromItem, ue4editor)))
+		
+		if (FPaths::FileExists(FPaths::Combine(EnginePath,TEXT("Engine/Binaries") ,*PlatfromItem, ue4editor)))
 		{
-			SelectorPlatfromList.Add(PlatfromItem);
+			int32 Index = SelectorPlatfromList.AddUnique(PlatfromItem);
+			if (!DefaultPlatfrom.IsEmpty() && PlatfromItem->Equals(DefaultPlatfrom))
+			{
+				DefaultPlatfromIndex = Index;
+			}
 		}
+
 	}
 	if (SelectorPlatfromList.Num() > 0)
 	{
-		CmbSelectCurrentPlatfrom = SelectorPlatfromList[0];
+		CmbSelectCurrentPlatfrom = SelectorPlatfromList[DefaultPlatfromIndex];
 
 		CmdWidgetPlatfromSelector->RefreshOptions();
 		CmdWidgetPlatfromSelector->SetSelectedItem(CmbSelectCurrentPlatfrom);
@@ -639,9 +652,15 @@ void SWidgetUELauncher::UpdatePlatfromSelector(TSharedPtr<FString> EngineChanged
 
 #undef EXECUTABLE_FORMAT
 }
-void SWidgetUELauncher::UpdateOpenVSButton(TSharedPtr<FString> EnginePath)
+
+void SWidgetUELauncher::UpdateSelectedPlatfrom(const FString& Platfrom)
 {
-	bool IsLauncherInstalledEngine = FPaths::FileExists(*EnginePath + TEXT("//Engine//Build//InstalledBuild.txt"));
+	UpdatePlatfromSelector(GetSelectedEnginePath(),Platfrom);
+
+}
+void SWidgetUELauncher::UpdateOpenVSButton(const FString& EnginePath)
+{
+	bool IsLauncherInstalledEngine = FPaths::FileExists(EnginePath + TEXT("//Engine//Build//InstalledBuild.txt"));
 	{
 		BtnOpenVS->SetEnabled(!IsLauncherInstalledEngine);
 		if (!IsLauncherInstalledEngine)
@@ -658,7 +677,17 @@ void SWidgetUELauncher::UpdateUseCmdEngine(bool pUseCmd)
 	CbUseCmdEngine->SetIsChecked(local_IsChecked);
 }
 
-
+void SWidgetUELauncher::UpdateLaunchParams(TArray<FString> pParamsArray)
+{
+	SrbWidgetLaunchParams->ClearChildren();
+	for (const auto& ParamItem : pParamsArray)
+	{
+		if (!ParamItem.IsEmpty())
+		{
+			AddParamTextBoxToSlot(ParamItem);
+		}
+	}
+}
 
 
 
@@ -691,6 +720,7 @@ TMap<FString, FString> GetAllRegistedEngineMap()
 
 	return resault;
 }
+
 TArray<FString> GetAllRegistedEngineList(const TMap<FString, FString>& pEngineMap)
 {
 	TArray<FString> resault;
