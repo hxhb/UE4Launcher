@@ -75,52 +75,60 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 							[
 								SNew(SVerticalBox)
 								+ SVerticalBox::Slot()
-							[
-								SNew(SHorizontalBox)
-								+ SHorizontalBox::Slot()
-							.HAlign(HAlign_Left)
-							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("SelectEngine", "Select Engine Version:"))
-							]
-						+ SHorizontalBox::Slot()
-							.AutoWidth()
-							.HAlign(HAlign_Right)
-							[
-								SNew(SHyperlink)
-								.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
-							.OnNavigate(this, &SWidgetUELauncher::OpenAboutMeWebsite)
-							]
+								[
+									SNew(SHorizontalBox)
+									+ SHorizontalBox::Slot()
+									.HAlign(HAlign_Left)
+									[
+										SNew(STextBlock)
+										.Text(LOCTEXT("SelectEngine", "Select Engine Version:"))
+									]
+									+ SHorizontalBox::Slot()
+									.AutoWidth()
+									.HAlign(HAlign_Right)
+									[
+										SNew(SHyperlink)
+										.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
+									.OnNavigate(this, &SWidgetUELauncher::OpenAboutMeWebsite)
+									]
 
-							]
-						+ SVerticalBox::Slot()
-							.AutoHeight()
-							.Padding(5.0f)
-							[
-								SNew(SHorizontalBox)
-								+ SHorizontalBox::Slot()
-							.AutoWidth()
-							.HAlign(HAlign_Left)
-							[
-								SAssignNew(CmdWidgetEngineSelector, SComboBox<TSharedPtr<FString>>)
-								.OptionsSource(&SelectorInstalledEngineList)
-							.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbEngineSelectionChanged)
-							.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbEngineGenerateWidget)
-							[
-								SNew(STextBlock)
-								.Text(this, &SWidgetUELauncher::HandleCmdEngineSelectionChangeText)
-							]
-							]
-						+ SHorizontalBox::Slot()
-							.HAlign(HAlign_Left)
-							.AutoWidth()
-							[
-								SAssignNew(BtnLaunchEngine, SButton)
-								//.Text(LOCTEXT("LaunchEngine", "Launch"))
-							.Text(this, &SWidgetUELauncher::GetLaunchEngineBtnText)
-							.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchEngine)
-							]
-							]
+								]
+								+ SVerticalBox::Slot()
+									.AutoHeight()
+									.Padding(5.0f)
+									[
+										SNew(SHorizontalBox)
+										+ SHorizontalBox::Slot()
+										.AutoWidth()
+										.HAlign(HAlign_Left)
+										[
+											SAssignNew(CmdWidgetEngineSelector, SComboBox<TSharedPtr<FString>>)
+											.OptionsSource(&SelectorInstalledEngineList)
+											.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbEngineSelectionChanged)
+											.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbEngineGenerateWidget)
+											[
+												SNew(STextBlock)
+												.Text(this, &SWidgetUELauncher::HandleCmdEngineSelectionChangeText)
+											]
+										]
+										+ SHorizontalBox::Slot()
+										.HAlign(HAlign_Left)
+										.AutoWidth()
+										[
+											SAssignNew(BtnLaunchEngine, SButton)
+											//.Text(LOCTEXT("LaunchEngine", "Launch"))
+											.Text(this, &SWidgetUELauncher::GetLaunchEngineBtnText)
+											.OnClicked(this, &SWidgetUELauncher::ClickEventLaunchEngine)
+										]
+										+ SHorizontalBox::Slot()
+											.HAlign(HAlign_Left)
+											.AutoWidth()
+											[
+												SAssignNew(BtnOpenVS, SButton)
+												.Text(LOCTEXT("OpenVS", "OpenVS"))
+												.OnClicked(this, &SWidgetUELauncher::ClickEventOpenVS)
+											]
+									]
 							]
 					+ SGridPanel::Slot(0, 2)
 						.HAlign(HAlign_Fill)
@@ -339,6 +347,7 @@ void SWidgetUELauncher::HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewS
 {
 	CmbSelectCurrentEngine = NewSelection;
 	UpdatePlatfromSelector(CmbSelectCurrentEngine);
+	UpdateOpenVSButton(NewSelection);
 }
 
 TSharedRef<SWidget> SWidgetUELauncher::HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem)
@@ -503,6 +512,25 @@ FReply SWidgetUELauncher::ClickEventLaunchProject()
 	return FReply::Handled();
 }
 
+FReply SWidgetUELauncher::ClickEventOpenVS()
+{
+	FString ue4sln = GetCurrentSelectEngine() + TEXT("//UE4.sln");
+	FString FinalCmdParams = TEXT("/c start devenv.exe ") + ue4sln;
+	FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
+	return FReply::Handled();
+}
+
+void SWidgetUELauncher::UpdateOpenVSButton(TSharedPtr<FString> EnginePath)
+{
+	bool IsLauncherInstalledEngine = FPaths::FileExists(*EnginePath + TEXT("//Engine//Build//InstalledBuild.txt"));
+	{
+		BtnOpenVS->SetEnabled(!IsLauncherInstalledEngine);
+		if(!IsLauncherInstalledEngine)
+			BtnOpenVS->SetVisibility(EVisibility::Visible);
+		else
+			BtnOpenVS->SetVisibility(EVisibility::Hidden);
+	}
+}
 void SWidgetUELauncher::EngineLauncher(const FString& EnginePath, const FString& Params)const
 {
 	FPlatformProcess::CreateProc(*EnginePath, *Params, true, false, false, NULL, NULL, NULL, NULL, NULL);
@@ -569,6 +597,7 @@ FString SWidgetUELauncher::GetSelectedProjectPath()const
 {
 	return OpenProjectFilePath;
 }
+
 
 FText SWidgetUELauncher::GetLaunchEngineBtnText()const
 {

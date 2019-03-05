@@ -80,7 +80,9 @@ public:
 	FReply ClickEventLaunchProject();
 	// Lcunch Engine
 	FReply ClickEventLaunchEngine();
+	FReply ClickEventOpenVS();
 
+	void UpdateOpenVSButton(TSharedPtr<FString> EnginePath);
 	// GetAllParams
 	FString GetSelectedEnginePath()const;
 	FString GetSelectedProjectPath()const;
@@ -110,5 +112,6 @@ private:
 
 	// button
 	TSharedPtr<SButton> BtnLaunchEngine;
+	TSharedPtr<SButton> BtnOpenVS;
 	TSharedPtr<SButton> BtnLaunchProject;
 };
