@@ -81,7 +81,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 									.Content()
 									[
 										SNew(STextBlock)
-										.Text(LOCTEXT("LoadSaveConfig", "Load/Save Config"))
+										.Text(LOCTEXT("LoadSaveConfig", "Load/Save Config & Developer Info"))
 									]
 								]
 								+SVerticalBox::Slot()
@@ -102,8 +102,8 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											[
 												SNew(SButton)
 												.Text(LOCTEXT("SaveConfig", "Save Config"))
-												.HAlign(HAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::BtnClickEventSaveConfig)
+											.HAlign(HAlign_Center)
+											.OnClicked(this, &SWidgetUELauncher::BtnClickEventSaveConfig)
 											]
 										+SHorizontalBox::Slot()
 											.HAlign(HAlign_Center)
@@ -343,7 +343,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 							.Content()
 							[
 								SNew(STextBlock)
-								.Text(LOCTEXT("HeaderContentLabel", "Clear/Launch"))
+								.Text(LOCTEXT("ManageConfig", "Manage Config"))
 							]
 						]
 
@@ -510,7 +510,7 @@ FReply SWidgetUELauncher::BtnClickEventOpenProjectFile()
 		const bool bOpened = DesktopPlatform->OpenFileDialog(
 			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
 			LOCTEXT("OpenUEProjectDialogTitle", "Open .uproject").ToString(),
-			FString(TEXT("C:\\")),
+			FString(TEXT("")),
 			TEXT(""),
 			TEXT("UE4 Project (*.uproject)|*.uproject"),
 			EFileDialogFlags::None,
@@ -575,7 +575,7 @@ FReply SWidgetUELauncher::BtnClickEventLoadConfig()
 		const bool bOpened = DesktopPlatform->OpenFileDialog(
 			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
 			LOCTEXT("OpenUE4LaunchConfig", "Open .json").ToString(),
-			FString(TEXT("C:\\")),
+			FString(TEXT("")),
 			TEXT(""),
 			TEXT("UE4Launcher json (*.json)|*.json"),
 			EFileDialogFlags::None,
@@ -610,8 +610,8 @@ FReply SWidgetUELauncher::BtnClickEventSaveConfig()
 		TArray<FString> SaveFilenames;
 		const bool bOpened = DesktopPlatform->SaveFileDialog(
 			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
-			LOCTEXT("OpenUE4LaunchConfig", "Open .json").ToString(),
-			FString(TEXT("C:\\")),
+			LOCTEXT("SvedUE4LaunchConfig", "Save .json").ToString(),
+			FString(TEXT("")),
 			TEXT(""),
 			TEXT("UE4Launcher json (*.json)|*.json"),
 			EFileDialogFlags::None,
