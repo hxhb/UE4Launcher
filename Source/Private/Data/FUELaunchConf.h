@@ -7,7 +7,6 @@
 
 struct FUELaunchConf
 {
-
 	FString LaunchEngine;
 	FString LaunchPlatfrom;
 	FString LaunchProject;

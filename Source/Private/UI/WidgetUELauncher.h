@@ -3,13 +3,13 @@
 #include "CoreMinimal.h"
 #include "Widgets/SWidget.h"
 #include "Data/FUELaunchConf.h"
-#include "Json.h"
+
+
+class SEditableBoxWraper;
+class SWidgetUELauncher;
 
 /** @return a new Drag and Drop test widget */
 TSharedRef<SWidget> MakeWidgetUELauncher();
-
-TArray<FString> GetAllRegistedEngineList(const TMap<FString, FString>& pEngineMap);
-TMap<FString, FString> GetAllRegistedEngineMap();
 
 class SWidgetUELauncher :public SCompoundWidget
 {
@@ -56,22 +56,23 @@ public:
 	
 
 public:
-	// uproject file path
+	// Widget Show Text
 	FText GetProjectFileText()const;
 	FText GetLaunchEngineBtnText()const;
 	FText GetLaunchProjectBtnText()const;
 
+public:
+	// Get conf
 	FString GetSelectedEnginePath()const;
-	FString GetSelectedEngineBinPath()const;
 	// get Selected .uproject file path
 	FString GetSelectedProjectPath()const;
 	// Get Selected Platfrom Win32/Win64
-	TSharedPtr<FString> GetSelectedPlatfrom()const;
+	FString GetSelectedPlatfrom()const;
 	// UseCmdEngine is Checked?
 	bool GetUseCmdEngine()const;
 	// Get All Launch Parameters
 	TArray<FString> GetAllLaunchParams()const;
-	FString CombineAllLaunchParams(const TArray<FString>& pAllParams)const;
+	FUELaunchConf GetLaunchConf()const;
 
 public:
 	// Add/Clear Launch parameter button clicked event
@@ -116,39 +117,29 @@ public:
 	void UpdateAll(const FUELaunchConf& conf);
 protected:
 
+	//FReply DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget);
 	// Create/Add a Editable Parameter Box.
-	TSharedRef<SEditableTextBox> CreateEditableTextBox(const FString& TextContent);
+	TSharedRef<SEditableBoxWraper> CreateEditableTextBox(const FString& TextContent);
 	void AddParamTextBoxToSlot(const FString& TextContent=TEXT(""));
 
-	// Launch Engine
-	void EngineLauncher(const FString& EnginePath, const FString& Params)const;
 
-	FUELaunchConf GetLaunchConf()const;
-	FString SerializationConf(const FUELaunchConf& SaveConfig);
-	FUELaunchConf DeSerializationConf(const FString& jsonConf);
 private:
 	// Main panel scrollbox
 	TSharedPtr<SScrollBox> SrbWidgetMain;
 	TMap<FString, FString> RegisterEngineMap;
-
 	// Add Launch Parameter
 	TSharedPtr<SScrollBox> SrbWidgetLaunchParams;
-
 	// open .uproject file
 	FString OpenProjectFilePath;
-
 	// button
 	TSharedPtr<SButton> BtnLaunchEngine;
 	TSharedPtr<SButton> BtnOpenVS;
 	TSharedPtr<SButton> BtnLaunchProject;
-
-
 	// UseCmd SCheckedBox
 	TSharedPtr<SCheckBox> CbUseCmdEngine;
 	// Button Text
 	mutable FString LaunchEngineBtnText{ TEXT("Launch") };
 	mutable FString LaunchProjectBtnText{ TEXT("Launch Configuration") };
-
 	bool bUseCmdEngine = false;
 
 };

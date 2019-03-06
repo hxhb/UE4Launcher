@@ -7,18 +7,24 @@
 #include "IWebBrowserWindow.h"
 #include "IWebBrowserPopupFeatures.h"
 #include "UI/WidgetUELauncher.h"
+#include "Data/FUELaunchConf.h"
+#include "Tools/EngineLaunchTools.h"
+#include "Tools/SerializationTools.h"
+#include <iostream>
+#include <direct.h> 
 
 #define LOCTEXT_NAMESPACE "UE4Launcher"
 
 IMPLEMENT_APPLICATION(UE4Launcher, "UE4Launcher");
 
+#define MAX_PATH_BUFFER 512
 TSharedRef<SDockTab> SpawnUELauncherTab(const FSpawnTabArgs& Args)
 {
 	TSharedRef<SDockTab> UELauncherTab = SNew(SDockTab)
-											.Label(LOCTEXT("UE4LauncherTab", "UE4 Launcher"))
-											.ToolTipText(LOCTEXT("UE4LauncherTabToolTip", "Launch Engine or Project."))
-											.TabRole(ETabRole::NomadTab)
-											.Clipping(EWidgetClipping::ClipToBounds);
+		.Label(LOCTEXT("UE4LauncherTab", "UE4 Launcher"))
+		.ToolTipText(LOCTEXT("UE4LauncherTabToolTip", "Launch Engine or Project."))
+		.TabRole(ETabRole::NomadTab)
+		.Clipping(EWidgetClipping::ClipToBounds);
 	UELauncherTab->SetContent
 	(
 		MakeWidgetUELauncher()
@@ -28,7 +34,7 @@ TSharedRef<SDockTab> SpawnUELauncherTab(const FSpawnTabArgs& Args)
 
 int RealExecutionMain(const TCHAR* pCmdLine)
 {
-	FCommandLine::Set(TEXT(""));
+	FCommandLine::Set(pCmdLine);
 
 	// start up the main loop
 	GEngineLoop.PreInit(pCmdLine);
@@ -45,11 +51,11 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	// set the application name
 	FGlobalTabmanager::Get()->SetApplicationTitle(LOCTEXT("AppTitle", "UE4 Launcher"));
 
-	// RegisterNomadTabSpawner is just one tab on window
-	// RegisterTabSpawner can have mulit table on window
 	FModuleManager::LoadModuleChecked<ISlateReflectorModule>("SlateReflector").RegisterTabSpawner(FWorkspaceItem::NewGroup(LOCTEXT("DeveloperMenu", "Developer")));
 
 	//// Registe WebBrowserTab
+	// RegisterNomadTabSpawner is just one tab on window
+	// RegisterTabSpawner can have mulit table on window
 	//FGlobalTabmanager::Get()->RegisterTabSpawner("UE4LauncherTab", FOnSpawnTab::CreateStatic(&SpawnUELauncherTab))
 	//	.SetDisplayName(LOCTEXT("UE4LauncherTab", "UE4 Launcher"));
 
@@ -66,25 +72,63 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	//	);
 
 	//FGlobalTabmanager::Get()->RestoreFrom(Layout, TSharedPtr<SWindow>());
+	FString jsonFile;
+	bool bUseCmdLine = false;
+	{
+		if (FParse::Value(FCommandLine::Get(), TEXT("-c"), jsonFile) && !jsonFile.IsEmpty())
+		{
+			TCHAR PathBuffer[MAX_PATH_BUFFER];
+			_wgetcwd(PathBuffer, MAX_PATH_BUFFER - 1);
+			FString runTimePath(PathBuffer);
+			//FString JsonfullPath=FPaths::Combine(_wgetcwd(PathBuffer,MAX_PATH_BUFFER-1), FPaths::ConvertRelativePathToFull(jsonFile));
+			FString jsonValue;
+			FString JsonfullPath = FPaths::ConvertRelativePathToFull(jsonFile);
+			if (FFileHelper::LoadFileToString(jsonValue, *JsonfullPath))
+			{
+				FUELaunchConf conf = SerializationTools::DeSerializationConf(jsonValue);
+				EngineLaunchTools::EngineLauncher(conf);
+				bUseCmdLine = true;
+			}
+			std::wcout << *jsonFile << std::endl;
+			std::wcout<<*JsonfullPath<<std::endl;
+			std::wcout << *runTimePath << std::endl;
+		}
+	}
+	TSharedPtr<SWidgetUELauncher> pLauncherWidget;
+	{	
+		if (!bUseCmdLine)
+		{
+			TSharedPtr<SWindow> MainWindow = SNew(SWindow)
+				.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
+				.ScreenPosition(FVector2D(520, 550))
+				.ClientSize(FVector2D(520, 550))
+				.SupportsMaximize(false)
+				.AutoCenter(EAutoCenter::PrimaryWorkArea)
+				.MaxHeight(800)
+				.MaxWidth(650)
+				.MinHeight(580)
+				.MinWidth(520)
+				.IsTopmostWindow(false)
+				[
+					//MakeWidgetUELauncher()
+					SAssignNew(pLauncherWidget, SWidgetUELauncher)
+				];
 
-	TSharedPtr<SWindow> MainWindow = SNew(SWindow)
-		.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
-		.ScreenPosition(FVector2D(520, 550))
-		.ClientSize(FVector2D(520, 550))
-		.SupportsMaximize(false)
-		.AutoCenter(EAutoCenter::PrimaryWorkArea)
-		.MaxHeight(800)
-		.MaxWidth(650)
-		.MinHeight(580)
-		.MinWidth(520)
-		.IsTopmostWindow(false)
-		[
-			MakeWidgetUELauncher()
-		];
-
-	FSlateApplication::Get().AddWindow(MainWindow.ToSharedRef());
-
-
+			FSlateApplication::Get().AddWindow(MainWindow.ToSharedRef());
+		}
+		if (FParse::Value(FCommandLine::Get(), TEXT("-e"), jsonFile) && !jsonFile.IsEmpty())
+		{
+			FString jsonValue;
+			FString JsonfullPath = FPaths::ConvertRelativePathToFull(jsonFile);
+			std::wcout << *jsonFile << std::endl;
+			std::wcout << *JsonfullPath << std::endl;
+			if (FFileHelper::LoadFileToString(jsonValue, *JsonfullPath))
+			{
+				FUELaunchConf conf = SerializationTools::DeSerializationConf(jsonValue);
+				pLauncherWidget->UpdateAll(conf);
+			}	
+		}
+	}
 	while (!GIsRequestingExit)
 	{
 		FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
@@ -92,7 +136,6 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 		FTicker::GetCoreTicker().Tick(FApp::GetDeltaTime());
 		FSlateApplication::Get().PumpMessages();
 		FSlateApplication::Get().Tick();
-		FPlatformProcess::Sleep(0);
 	}
 	FModuleManager::Get().UnloadModulesAtShutdown();
 	FSlateApplication::Shutdown();

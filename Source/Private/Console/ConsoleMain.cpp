@@ -2,15 +2,16 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "RealExecutionMain.h"
+#include "Tools/EngineLaunchTools.h"
 
 namespace StringLibs {
 	FString Conv_CharArrayToFString(int elementNum, char* CharArray[]);
 }
-
+#define MAX_PATH_BUFFER 512
 int main(int argc,char *argv[])
 {
-    int resault = RealExecutionMain(*StringLibs::Conv_CharArrayToFString(argc,argv));
-    return resault;
+	int resault = RealExecutionMain(*StringLibs::Conv_CharArrayToFString(argc, argv));
+	return resault;
 }
 
 
