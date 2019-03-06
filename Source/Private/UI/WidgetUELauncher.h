@@ -5,6 +5,8 @@
 #include "Data/FUELaunchConf.h"
 #include "Json.h"
 
+class SEditableBoxWraper;
+
 /** @return a new Drag and Drop test widget */
 TSharedRef<SWidget> MakeWidgetUELauncher();
 
@@ -116,8 +118,9 @@ public:
 	void UpdateAll(const FUELaunchConf& conf);
 protected:
 
+	FReply DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget);
 	// Create/Add a Editable Parameter Box.
-	TSharedRef<SEditableTextBox> CreateEditableTextBox(const FString& TextContent);
+	TSharedRef<SEditableBoxWraper> CreateEditableTextBox(const FString& TextContent);
 	void AddParamTextBoxToSlot(const FString& TextContent=TEXT(""));
 
 	// Launch Engine
@@ -150,5 +153,7 @@ private:
 	mutable FString LaunchProjectBtnText{ TEXT("Launch Configuration") };
 
 	bool bUseCmdEngine = false;
+
+	//TMap<SWidget, TSharedRef<SEditableBoxWraper>> ParamsMaps;
 
 };

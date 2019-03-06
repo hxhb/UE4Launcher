@@ -49,6 +49,7 @@
 
 #include "Paths.h"
 
+#include "SEditableBoxWraper.h"
 //
 #define LOCTEXT_NAMESPACE "WidgetUELauncher"
 
@@ -308,8 +309,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 									+ SScrollBox::Slot()
 									.Padding(0.0f, 3.0f)
 									[
-										SNew(SEditableTextBox)
-										.HintText(LOCTEXT("LaunchParam_0", "Input Project Launch paramater."))
+										CreateEditableTextBox(TEXT(""))
 									]
 								]
 								// add a new input param box
@@ -779,13 +779,39 @@ bool SWidgetUELauncher::GetUseCmdEngine()const
 	return bUseCmdEngine;
 }
 
-TSharedRef<SEditableTextBox> SWidgetUELauncher::CreateEditableTextBox(const FString& TextContent)
+TSharedRef<SEditableBoxWraper> SWidgetUELauncher::CreateEditableTextBox(const FString& TextContent)
 {
-	return SNew(SEditableTextBox)
-		.HintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
-		.Text(FText::FromString(TextContent));
+	TSharedRef<SEditableBoxWraper> CreatedWidget =  SNew(SEditableBoxWraper)
+			.EditableHintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
+			.EditableText(FText::FromString(TextContent))
+			.ButtonText(FText::FromString(TEXT("D")))
+			.OnDeleteClicked(this, &SWidgetUELauncher::DeleteParamExitableBoxWidget);
+	return CreatedWidget;
 }
 
+FReply SWidgetUELauncher::DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget)
+{
+	//int32 deleteIndex=-1;
+	//FChildren* SrbWidgetLaunchParamsChildren=SrbWidgetLaunchParams->GetChildren();
+	//for (int32 index = 0; index < SrbWidgetLaunchParamsChildren->Num(); ++index)
+	//{
+	//	TSharedRef<SWidget> indexItm=SrbWidgetLaunchParamsChildren->GetChildAt(index);
+	//	SWidget& WidgetRef = indexItm.Get();
+	//	SEditableBoxWraper& pWidgetRef = *pWidget;
+
+
+	//	if (&WidgetRef == &pWidgetRef)
+	//	{
+	//		deleteIndex = index;
+	//		break;
+	//	}
+	//}
+	//if (deleteIndex != INDEX_NONE)
+	//{
+		SrbWidgetLaunchParams->RemoveSlot(pWidget.ToSharedRef());
+	//}
+	return FReply::Handled();
+}
 void SWidgetUELauncher::AddParamTextBoxToSlot(const FString& TextContent)
 {
 	SrbWidgetLaunchParams->AddSlot()

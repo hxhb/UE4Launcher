@@ -8,7 +8,7 @@
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SEditableBoxWraper::Construct(const FArguments& InArgs)
 {
-	
+	OnDeleteSelgClicked = InArgs._OnDeleteClicked;
 	ChildSlot
 	[
 		SNew(SHorizontalBox)
@@ -17,7 +17,8 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 		.FillWidth(1.0f)
 		[
 			SNew(SEditableTextBox)
-			.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
+			.Text(InArgs._EditableText)
+			.HintText(InArgs._EditableHintText)
 
 
 		]
@@ -26,13 +27,25 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 			.AutoWidth()
 			[
 				SNew(SButton)
-				.Text(LOCTEXT("SelectProjectFile", "Select"))
+				.Text(InArgs._ButtonText)
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
+				.OnClicked(this,&SEditableBoxWraper::OnClickEventDeleteSelf)
 			]
 	];
 	
 }
+
+FReply SEditableBoxWraper::OnClickEventDeleteSelf()
+{
+	OnDeleteSelgClicked.Execute(MakeShareableEditBox(this));
+	return FReply::Handled();
+}
+
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
+TSharedPtr<SEditableBoxWraper> MakeShareableEditBox(SEditableBoxWraper* EditableBoxWraperObj)
+{
+	return ::MakeShareable(EditableBoxWraperObj);
+}
 #undef LOCTEXT_NAMESPACE
