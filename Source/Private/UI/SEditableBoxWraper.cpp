@@ -10,24 +10,32 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 {
 	OnDeleteSelgClicked = InArgs._OnDeleteClicked;
 	ChildSlot
-	[
-		SNew(SHorizontalBox)
+		[
+		SAssignNew(HorzontaBox, SHorizontalBox)
 		+ SHorizontalBox::Slot()
-		//.AutoWidth()
 		.FillWidth(1.0f)
 		[
-			SNew(SEditableTextBox)
+			SAssignNew(EditableTextBox,SEditableTextBox)
 			.Text(InArgs._EditableText)
 			.HintText(InArgs._EditableHintText)
 
 
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(InArgs._BtnClearText)
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			.OnClicked(this, &SEditableBoxWraper::OnClickEventClearText)
 		]
 		// open uproject file button
 		+ SHorizontalBox::Slot()
 			.AutoWidth()
 			[
 				SNew(SButton)
-				.Text(InArgs._ButtonText)
+				.Text(InArgs._BtnDeleteText)
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
 				.OnClicked(this,&SEditableBoxWraper::OnClickEventDeleteSelf)
@@ -36,16 +44,26 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 	
 }
 
+FReply SEditableBoxWraper::OnClickEventClearText()
+{
+	EditableTextBox->SetText(FText::FromString(TEXT("")));
+	return FReply::Handled();
+}
 FReply SEditableBoxWraper::OnClickEventDeleteSelf()
 {
-	OnDeleteSelgClicked.Execute(MakeShareableEditBox(this));
+	EditableTextBox->SetText(FText::FromString(TEXT("")));
+	this->SetVisibility(EVisibility::Collapsed);
 	return FReply::Handled();
 }
 
+void SEditableBoxWraper::SetText(const FText& NewText)
+{
+	EditableTextBox->SetText(NewText);
+}
+FText SEditableBoxWraper::GetEditableBoxText()const
+{
+	return EditableTextBox->GetText();
+}
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-TSharedPtr<SEditableBoxWraper> MakeShareableEditBox(SEditableBoxWraper* EditableBoxWraperObj)
-{
-	return ::MakeShareable(EditableBoxWraperObj);
-}
 #undef LOCTEXT_NAMESPACE

@@ -21,26 +21,29 @@ public:
 	SLATE_BEGIN_ARGS(SEditableBoxWraper)
 		:_EditableText()
 		,_EditableHintText()
-		,_ButtonText()
+		,_BtnClearText()
+		,_BtnDeleteText()
 	{}
 	SLATE_ATTRIBUTE(FText, EditableText)
 	SLATE_ATTRIBUTE(FText, EditableHintText)
-	SLATE_ATTRIBUTE(FText, ButtonText)
+	SLATE_ATTRIBUTE(FText, BtnClearText)
+	SLATE_ATTRIBUTE(FText, BtnDeleteText)
 	SLATE_EVENT(FOnDeleteClicked, OnDeleteClicked)
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
 	void Construct(const FArguments& InArgs);
 
+	void SetText(const FText& NewText);
 	FText GetEditableBoxText()const;
 	FOnDeleteClicked OnDeleteSelgClicked;
 
-	friend TSharedPtr<SEditableBoxWraper> MakeShareableEditBox(SEditableBoxWraper* EditableBoxWraperObj);
-	//friend SharedPointerInternals::FRawPtrProxy< SEditableBoxWraper > ::MakeShareable(SEditableBoxWraper* InObject);
-	friend struct SharedPointerInternals::FRawPtrProxy< SEditableBoxWraper >;
-
 public:
+	FReply OnClickEventClearText();
 	FReply OnClickEventDeleteSelf();
 
+private:
+	TSharedPtr<SHorizontalBox> HorzontaBox;
+	TSharedPtr<SEditableTextBox> EditableTextBox;
 };
 

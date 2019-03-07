@@ -50,6 +50,8 @@
 #include "Paths.h"
 
 #include "SEditableBoxWraper.h"
+#include "Tools/SerializationTools.h"
+#include "Tools/EngineLaunchTools.h"
 //
 #define LOCTEXT_NAMESPACE "WidgetUELauncher"
 
@@ -391,7 +393,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 
 	];
 	// initialize
-	TMap<FString, FString> EngineMap = GetAllRegistedEngineMap();
+	TMap<FString, FString> EngineMap = EngineLaunchTools::GetAllRegistedEngineMap();
 	{
 		UpdateEngineSelector(EngineMap);
 		UpdatePlatfromSelector(GetSelectedEnginePath());
@@ -474,27 +476,13 @@ FReply SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton()
 
 FReply SWidgetUELauncher::BtnClickEventLaunchEngine()
 {
-
-	EngineLauncher(GetSelectedEngineBinPath(), TEXT(""));
+	EngineLaunchTools::EngineLauncher(GetLaunchConf());
 	return FReply::Handled();
 }
 
 FReply SWidgetUELauncher::BtnClickEventLaunchProject()
 {
-	FString EnginePath=GetSelectedEngineBinPath();
-	FString ProjectPath = GetSelectedProjectPath();
-	FString AllParams = CombineAllLaunchParams(GetAllLaunchParams());
-
-	if(!(EnginePath.Len()>0 && FPaths::FileExists(*EnginePath)))
-		return FReply::Handled();
-	if (!(EnginePath.Len() > 0 && FPaths::FileExists(*EnginePath)))
-	{
-		ProjectPath.Empty();
-	}
-	{
-		FString Params = FString::Printf(TEXT("\"%s\" %s"), *ProjectPath, *AllParams);
-		EngineLauncher(EnginePath, Params);
-	}
+	EngineLaunchTools::EngineLauncher(GetLaunchConf());
 
 	return FReply::Handled();
 }
@@ -574,10 +562,10 @@ FReply SWidgetUELauncher::BtnClickEventLoadConfig()
 		TArray<FString> OpenFilenames;
 		const bool bOpened = DesktopPlatform->OpenFileDialog(
 			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
-			LOCTEXT("OpenUE4LaunchConfig", "Open .json").ToString(),
+			LOCTEXT("OpenUE4LaunchConfig", "Open .uejson").ToString(),
 			FString(TEXT("")),
 			TEXT(""),
-			TEXT("UE4Launcher json (*.json)|*.json"),
+			TEXT("UE4Launcher json (*.uejson)|*.uejson"),
 			EFileDialogFlags::None,
 			OpenFilenames
 		);
@@ -590,7 +578,7 @@ FReply SWidgetUELauncher::BtnClickEventLoadConfig()
 				bool flag = FFileHelper::LoadFileToString(jsonValue, *SelectedLoadConfigPath);
 				if (flag)
 				{
-					FUELaunchConf conf=DeSerializationConf(jsonValue);
+					FUELaunchConf conf=SerializationTools::DeSerializationConf(jsonValue);
 					UpdateAll(conf);
 				}
 			}
@@ -610,10 +598,10 @@ FReply SWidgetUELauncher::BtnClickEventSaveConfig()
 		TArray<FString> SaveFilenames;
 		const bool bOpened = DesktopPlatform->SaveFileDialog(
 			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
-			LOCTEXT("SvedUE4LaunchConfig", "Save .json").ToString(),
+			LOCTEXT("SvedUE4LaunchConfig", "Save .uejson").ToString(),
 			FString(TEXT("")),
 			TEXT(""),
-			TEXT("UE4Launcher json (*.json)|*.json"),
+			TEXT("UE4Launcher json (*.uejson)|*.uejson"),
 			EFileDialogFlags::None,
 			SaveFilenames
 		);
@@ -624,66 +612,15 @@ FReply SWidgetUELauncher::BtnClickEventSaveConfig()
 
 			{
 				// serialization config
-				FFileHelper::SaveStringToFile(SerializationConf(GetLaunchConf()), *SelectedSaveConfigPath);
+				FFileHelper::SaveStringToFile(SerializationTools::SerializationConf(GetLaunchConf()), *SelectedSaveConfigPath);
 			}
 		}
-
-
 	}
 	return FReply::Handled();
 }
 
-FUELaunchConf SWidgetUELauncher::GetLaunchConf()const
-{
-	FUELaunchConf Conf;
-	Conf.LaunchEngine = GetSelectedEnginePath();
-	Conf.LaunchPlatfrom = *GetSelectedPlatfrom();
-	Conf.bUseCmdEngine = GetUseCmdEngine();
-	Conf.LaunchParams = GetAllLaunchParams();
-	Conf.LaunchProject = GetSelectedProjectPath();
-	return Conf;
-}
-FString SWidgetUELauncher::SerializationConf(const FUELaunchConf& SaveConfig)
-{
-	FString JsonStr;
-	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> JsonWriter = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&JsonStr);
-	JsonWriter->WriteObjectStart();
-	JsonWriter->WriteValue(TEXT("LaunchEngine"), SaveConfig.LaunchEngine);
-	JsonWriter->WriteValue(TEXT("LaunchPlatfrom"), SaveConfig.LaunchPlatfrom);
-	JsonWriter->WriteValue(TEXT("LaunchProject"), SaveConfig.LaunchProject);
-	JsonWriter->WriteValue(TEXT("bUseCmdEngine"), SaveConfig.bUseCmdEngine);
-	JsonWriter->WriteArrayStart("LaunchParams");
-	for (const auto& ParamItem : SaveConfig.LaunchParams)
-	{
-		JsonWriter->WriteObjectStart();
-		JsonWriter->WriteValue(TEXT("ParamItem"), ParamItem);
-		JsonWriter->WriteObjectEnd();
-	}
-	JsonWriter->WriteArrayEnd();
-	JsonWriter->WriteObjectEnd();
-	JsonWriter->Close();
-	return JsonStr;
-}
-FUELaunchConf SWidgetUELauncher::DeSerializationConf(const FString& jsonConf)
-{
-	FUELaunchConf loadConf;
-	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(jsonConf);
-	TSharedPtr<FJsonObject> JsonObject;
-	bool BFlag = FJsonSerializer::Deserialize(JsonReader, JsonObject);
-	if (BFlag)
-	{
-		loadConf.LaunchEngine = JsonObject->GetStringField(TEXT("LaunchEngine"));
-		loadConf.LaunchPlatfrom = JsonObject->GetStringField(TEXT("LaunchPlatfrom"));
-		loadConf.LaunchProject = JsonObject->GetStringField(TEXT("LaunchProject"));
-		loadConf.bUseCmdEngine = JsonObject->GetBoolField(TEXT("bUseCmdEngine"));
-		TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("LaunchParams");
-		for (const auto& DataItem : LaunchParamsData)
-		{
-			loadConf.LaunchParams.Add(DataItem->AsObject()->GetStringField(TEXT("ParamItem")));
-		}
-	}
-	return loadConf;
-}
+
+
 
 void SWidgetUELauncher::UpdateAll(const FUELaunchConf& conf)
 {
@@ -693,10 +630,19 @@ void SWidgetUELauncher::UpdateAll(const FUELaunchConf& conf)
 	UpdateLaunchParams(conf.LaunchParams);
 	UpdateUseCmdEngine(conf.bUseCmdEngine);
 }
-
-TSharedPtr<FString> SWidgetUELauncher::GetSelectedPlatfrom()const
+FUELaunchConf SWidgetUELauncher::GetLaunchConf()const
 {
-	return CmbSelectCurrentPlatfrom;
+	FUELaunchConf Conf;
+	Conf.LaunchEngine = GetSelectedEnginePath();
+	Conf.LaunchPlatfrom = GetSelectedPlatfrom();
+	Conf.bUseCmdEngine = GetUseCmdEngine();
+	Conf.LaunchParams = GetAllLaunchParams();
+	Conf.LaunchProject = GetSelectedProjectPath();
+	return Conf;
+}
+FString SWidgetUELauncher::GetSelectedPlatfrom()const
+{
+	return *CmbSelectCurrentPlatfrom;
 }
 
 FText SWidgetUELauncher::GetProjectFileText()const
@@ -707,13 +653,6 @@ FText SWidgetUELauncher::GetProjectFileText()const
 FString SWidgetUELauncher::GetSelectedEnginePath()const
 {
 	return *CmbSelectCurrentEngine;
-}
-FString SWidgetUELauncher::GetSelectedEngineBinPath()const
-{
-	TSharedPtr<FString> Platfrom = GetSelectedPlatfrom();
-	FString EngineProgramName = GetUseCmdEngine() ? TEXT("UE4Editor-cmd.exe") : TEXT("UE4Editor.exe");
-	FString resault(FPaths::Combine(*GetSelectedEnginePath(), TEXT("Engine/Binaries/"),*Platfrom,*EngineProgramName));
-	return resault;
 }
 
 FString SWidgetUELauncher::GetSelectedProjectPath()const
@@ -746,29 +685,16 @@ TArray<FString> SWidgetUELauncher::GetAllLaunchParams()const
 		for (int32 index = 0; index < ScrollBoxChildren->Num(); index++)
 		{
 			SWidget* Widget = &(ScrollBoxChildren->GetChildAt(index).Get());
-			SEditableTextBox* ScrollBoxChildTextItem = static_cast<SEditableTextBox*>(Widget);
+			SEditableBoxWraper* ScrollBoxChildTextItem = static_cast<SEditableBoxWraper*>(Widget);
 			if (ScrollBoxChildTextItem)
 			{
-				FString TextItemString = ScrollBoxChildTextItem->GetText().ToString();
+				FString TextItemString = ScrollBoxChildTextItem->GetEditableBoxText().ToString();
 				if (TextItemString.Len() > 0)
 				{
 					resault.Add(TextItemString);
 				}
 			}
 		}
-	}
-
-	return resault;
-}
-
-FString SWidgetUELauncher::CombineAllLaunchParams(const TArray<FString>& pAllParams)const
-{
-	FString resault;
-
-	for (auto index : pAllParams)
-	{
-		resault.Append(" ");
-		resault.Append(index);
 	}
 
 	return resault;
@@ -781,37 +707,20 @@ bool SWidgetUELauncher::GetUseCmdEngine()const
 
 TSharedRef<SEditableBoxWraper> SWidgetUELauncher::CreateEditableTextBox(const FString& TextContent)
 {
-	TSharedRef<SEditableBoxWraper> CreatedWidget =  SNew(SEditableBoxWraper)
-			.EditableHintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
-			.EditableText(FText::FromString(TextContent))
-			.ButtonText(FText::FromString(TEXT("D")))
-			.OnDeleteClicked(this, &SWidgetUELauncher::DeleteParamExitableBoxWidget);
+	TSharedRef<SEditableBoxWraper> CreatedWidget = SNew(SEditableBoxWraper)
+		.EditableHintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
+		.EditableText(FText::FromString(TextContent))
+		.BtnClearText(FText::FromString(TEXT("C")))
+		.BtnDeleteText(FText::FromString(TEXT("D")));
+			//.OnDeleteClicked(this, &SWidgetUELauncher::DeleteParamExitableBoxWidget);
 	return CreatedWidget;
 }
-
-FReply SWidgetUELauncher::DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget)
-{
-	//int32 deleteIndex=-1;
-	//FChildren* SrbWidgetLaunchParamsChildren=SrbWidgetLaunchParams->GetChildren();
-	//for (int32 index = 0; index < SrbWidgetLaunchParamsChildren->Num(); ++index)
-	//{
-	//	TSharedRef<SWidget> indexItm=SrbWidgetLaunchParamsChildren->GetChildAt(index);
-	//	SWidget& WidgetRef = indexItm.Get();
-	//	SEditableBoxWraper& pWidgetRef = *pWidget;
-
-
-	//	if (&WidgetRef == &pWidgetRef)
-	//	{
-	//		deleteIndex = index;
-	//		break;
-	//	}
-	//}
-	//if (deleteIndex != INDEX_NONE)
-	//{
-		SrbWidgetLaunchParams->RemoveSlot(pWidget.ToSharedRef());
-	//}
-	return FReply::Handled();
-}
+//
+//FReply SWidgetUELauncher::DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget)
+//{
+//		SrbWidgetLaunchParams->RemoveSlot(pWidget.ToSharedRef());
+//	return FReply::Handled();
+//}
 void SWidgetUELauncher::AddParamTextBoxToSlot(const FString& TextContent)
 {
 	SrbWidgetLaunchParams->AddSlot()
@@ -830,7 +739,7 @@ void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& Engin
 		int32 DefaultIndex = 0;
 		RegisterEngineMap = EngineMap;
 		SelectorInstalledEngineList.Empty();
-		for (const FString& EnginePath : GetAllRegistedEngineList(RegisterEngineMap))
+		for (const FString& EnginePath : EngineLaunchTools::GetAllRegistedEngineList(RegisterEngineMap))
 		{
 			int32 index=SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
 			if (!bUseDefaultEngine)
@@ -844,16 +753,16 @@ void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& Engin
 
 		CmdWidgetEngineSelector->RefreshOptions();
 		CmdWidgetEngineSelector->SetSelectedItem(CmbSelectCurrentEngine);
-		//UpdatePlatfromSelector(*CmbSelectCurrentEngine);
 	}
 }
 void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString DefaultPlatfrom)
 {
 
-#define EXECUTABLE_FORMAT TEXT(".exe")
-	int32 DefaultPlatfromIndex=0;
-	FString ue4editor(TEXT("UE4Editor"));
-	ue4editor.Append(EXECUTABLE_FORMAT);
+	FUELaunchConf Conf;
+	Conf.LaunchEngine = EnginePath;
+	Conf.LaunchPlatfrom = DefaultPlatfrom;
+
+	int32 local_DefaultPlatfromIndex=0;
 	SelectorPlatfromList.Empty();
 	TArray<TSharedPtr<FString>> Platfroms = {
 		MakeShareable(new FString(TEXT("Win64"))),
@@ -862,20 +771,20 @@ void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString
 
 	for (const auto& PlatfromItem : Platfroms)
 	{
-		
-		if (FPaths::FileExists(EnginePath+TEXT("/Engine/Binaries/")+*PlatfromItem+TEXT("/")+ue4editor))
+		Conf.LaunchPlatfrom = *PlatfromItem;
+		if (FPaths::FileExists(EngineLaunchTools::GetEngineBinPath(Conf)))
 		{
 			int32 Index = SelectorPlatfromList.AddUnique(PlatfromItem);
 			if (!DefaultPlatfrom.IsEmpty() && PlatfromItem->Equals(DefaultPlatfrom))
 			{
-				DefaultPlatfromIndex = Index;
+				local_DefaultPlatfromIndex = Index;
 			}
 		}
 
 	}
 	if (SelectorPlatfromList.Num() > 0)
 	{
-		CmbSelectCurrentPlatfrom = SelectorPlatfromList[DefaultPlatfromIndex];
+		CmbSelectCurrentPlatfrom = SelectorPlatfromList[local_DefaultPlatfromIndex];
 
 		CmdWidgetPlatfromSelector->RefreshOptions();
 		CmdWidgetPlatfromSelector->SetSelectedItem(CmbSelectCurrentPlatfrom);
@@ -886,7 +795,7 @@ void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString
 
 void SWidgetUELauncher::UpdateSelectedPlatfrom(const FString& Platfrom)
 {
-	UpdatePlatfromSelector(GetSelectedEngineBinPath(),Platfrom);
+	UpdatePlatfromSelector(GetSelectedEnginePath(),Platfrom);
 
 }
 void SWidgetUELauncher::UpdateOpenVSButton(const FString& EnginePath)
@@ -920,18 +829,11 @@ void SWidgetUELauncher::UpdateLaunchParams(const TArray<FString>& pParamsArray)
 			AddParamTextBoxToSlot(ParamItem);
 		}
 	}
-
 }
 
 void SWidgetUELauncher::UpdateSelectedProject(const FString& ProjectPath)
 {
 	OpenProjectFilePath = ProjectPath;
-}
-
-
-void SWidgetUELauncher::EngineLauncher(const FString& EnginePath, const FString& Params)const
-{
-	FPlatformProcess::CreateProc(*EnginePath, *Params, true, false, false, NULL, NULL, NULL, NULL, NULL);
 }
 
 
@@ -949,31 +851,6 @@ TSharedRef<SWidget> MakeWidgetUELauncher()
 		.RenderTransform_Static(&GetTestRenderTransform)
 		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
 }
-
-TMap<FString, FString> GetAllRegistedEngineMap()
-{
-	TMap<FString, FString> resault;
-	FDesktopPlatformModule::Get()->EnumerateEngineInstallations(resault);
-
-	return resault;
-}
-
-TArray<FString> GetAllRegistedEngineList(const TMap<FString, FString>& pEngineMap)
-{
-	TArray<FString> resault;
-	TArray<FString> EngineAllKey;
-	pEngineMap.GetKeys(EngineAllKey);
-
-	for (FString& Key : EngineAllKey)
-	{
-		if (pEngineMap.Find(Key))
-		{
-			resault.Add(*pEngineMap.Find(Key));
-		}
-	}
-	return resault;
-}
-
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 #undef LOCTEXT_NAMESPACE

@@ -11,7 +11,8 @@ int WinMain(
 	_In_ int nShowCmd
 )
 {
-	int resault=RealExecutionMain(GetCommandLineW());
+	LPWSTR Args = GetCommandLineW();
+	int resault=RealExecutionMain(Args);
 
 	return resault;
 }
