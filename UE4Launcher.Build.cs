@@ -7,12 +7,18 @@ public class UE4Launcher : ModuleRules
 {
 	public UE4Launcher(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PublicIncludePaths.Add("Runtime/Launch/Public");
-
-		PrivateIncludePaths.Add("Runtime/Launch/Private");		// For LaunchEngineLoop.cpp include
-		PrivateIncludePaths.Add("Programs/UE4Launcher/Source");
-        PrivateIncludePaths.Add("Programs/UE4Launcher/Source/Public");
-        PrivateIncludePaths.Add("Programs/UE4Launcher/Source/Private");
+        PublicIncludePaths.AddRange(
+            new string[]
+            {
+                "Runtime/Launch/Public",
+                "Programs/UE4Launcher/Source/Public",
+            }); 
+        PrivateIncludePaths.AddRange(
+            new string[]
+            {
+                "Runtime/Launch/Private",  // For LaunchEngineLoop.cpp include
+                "Programs/UE4Launcher/Source/Private"
+            });
 
         PrivateDependencyModuleNames.AddRange(
             new string[] {
@@ -40,11 +46,6 @@ public class UE4Launcher : ModuleRules
                 "SlateReflector",
             }
         );
-        //DynamicallyLoadedModuleNames.AddRange(
-        //    new string[] {
-        //        "SlateReflector",
-        //    }
-        //);
     }
 }
 

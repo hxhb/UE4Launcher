@@ -1,6 +1,7 @@
 //// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 //
-#include "WidgetUELauncher.h"
+#include "SlateWidget/WidgetUELauncher.h"
+
 #include "Animation/CurveSequence.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
@@ -36,23 +37,22 @@
 #include "Widgets/Input/SSlider.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Framework/Docking/TabManager.h"
-
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Docking/SDockTab.h"
-
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
 #include "Widgets/Images/SThrobber.h"
 #include "Widgets/Input/SHyperlink.h"
 #include "Widgets/Input/STextComboBox.h"
 #include "Widgets/Input/SVolumeControl.h"
 #include "Widgets/Input/STextComboPopup.h"
-
 #include "Paths.h"
 
-#include "SEditableBoxWraper.h"
+// project files
+#include "SlateWidget/SEditableBoxWraper.h"
 #include "Tools/SerializationTools.h"
 #include "Tools/EngineLaunchTools.h"
-//
+#include "Tools/SlateWidgetTools.h"
+
 #define LOCTEXT_NAMESPACE "WidgetUELauncher"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -669,16 +669,17 @@ FText SWidgetUELauncher::GetLaunchProjectBtnText()const
 {
 	return FText::FromString(LaunchProjectBtnText);
 }
-#include "../Tools/HackPrivateMember.hpp"
-DECL_HACK_PRIVATE_DATA(SScrollBox, TSharedPtr<SScrollPanel>, ScrollPanel)
+//#include "../Tools/HackPrivateMember.hpp"
+//DECL_HACK_PRIVATE_DATA(SScrollBox, TSharedPtr<SScrollPanel>, ScrollPanel)
 
 TArray<FString> SWidgetUELauncher::GetAllLaunchParams()const
 {
 	TArray<FString> resault;
 
 	SScrollBox* ScrollboxWidget = &*SrbWidgetLaunchParams;
-	SPanel* ScrollPanelWidget = reinterpret_cast<SPanel*>(&*(GET_VAR_PRIVATE_DATA_MEMBER(ScrollboxWidget, SScrollBox, ScrollPanel)));
-	FChildren* ScrollBoxChildren = ScrollPanelWidget->GetChildren();
+	//SPanel* ScrollPanelWidget = reinterpret_cast<SPanel*>(&*(GET_VAR_PRIVATE_DATA_MEMBER(ScrollboxWidget, SScrollBox, ScrollPanel)));
+
+	FChildren* ScrollBoxChildren = SlateWidgetTools::GetScrollBoxChildren(ScrollboxWidget);
 
 	if (ScrollBoxChildren->Num() > 0)
 	{

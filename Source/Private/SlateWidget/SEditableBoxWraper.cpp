@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "SEditableBoxWraper.h"
+#include "SlateWidget/SEditableBoxWraper.h"
 #include "SlateOptMacros.h"
 //
 #define LOCTEXT_NAMESPACE "EditableBoxWraper"

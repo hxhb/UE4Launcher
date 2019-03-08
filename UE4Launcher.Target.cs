@@ -11,9 +11,6 @@ public class UE4LauncherTarget : TargetRules
 		LinkType = TargetLinkType.Monolithic;
 		LaunchModuleName = "UE4Launcher";
         ExtraModuleNames.Add("EditorStyle");
-
-
-
     }
 
     public override void SetupGlobalEnvironment(
