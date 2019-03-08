@@ -11,7 +11,7 @@
 
 // project files
 #include "SlateWidget/WidgetUELauncher.h"
-#include "Data/FUELaunchConf.h"
+#include "Data/FLaunchConf.h"
 #include "Tools/EngineLaunchTools.h"
 #include "Tools/SerializationTools.h"
 #include "Tools/CommandLineParase.h"
@@ -39,7 +39,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	FModuleManager::LoadModuleChecked<ISlateReflectorModule>("SlateReflector").RegisterTabSpawner(FWorkspaceItem::NewGroup(LOCTEXT("DeveloperMenu", "Developer")));
 
 	TMap<FString, FString> CommandArgsMaps = CommandLineParase::GetCommandLineParamsMap(FCommandLine::Get());
-	FUELaunchConf DefaultConfig;
+	FLaunchConf DefaultConfig;
 	FString CommandLaunchArg = CommandArgsMaps.Contains(TEXT("e")) ? TEXT("e") :
 							CommandArgsMaps.Contains(TEXT("c")) ? TEXT("c") : TEXT("");
 

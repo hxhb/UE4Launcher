@@ -1,16 +1,17 @@
 #include "Tools/SerializationTools.h"
 
-FString SerializationTools::SerializationConf(const FUELaunchConf& SaveConfig)
+FString SerializationTools::SerializationConf(const FLaunchConf& SaveConfig)
 {
 	FString JsonStr;
 	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> JsonWriter = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&JsonStr);
 	JsonWriter->WriteObjectStart();
-	JsonWriter->WriteValue(TEXT("LaunchEngine"), SaveConfig.LaunchEngine);
-	JsonWriter->WriteValue(TEXT("LaunchPlatfrom"), SaveConfig.LaunchPlatfrom);
-	JsonWriter->WriteValue(TEXT("LaunchProject"), SaveConfig.LaunchProject);
+	JsonWriter->WriteValue(TEXT("Engine"), SaveConfig.Engine);
+	JsonWriter->WriteValue(TEXT("Platfrom"), SaveConfig.Platfrom);
+	JsonWriter->WriteValue(TEXT("Project"), SaveConfig.Project);
+	JsonWriter->WriteValue(TEXT("Tool"), SaveConfig.Tool);
 	JsonWriter->WriteValue(TEXT("bUseCmdEngine"), SaveConfig.bUseCmdEngine);
-	JsonWriter->WriteArrayStart("LaunchParams");
-	for (const auto& ParamItem : SaveConfig.LaunchParams)
+	JsonWriter->WriteArrayStart("Params");
+	for (const auto& ParamItem : SaveConfig.Params)
 	{
 		JsonWriter->WriteObjectStart();
 		JsonWriter->WriteValue(TEXT("ParamItem"), ParamItem);
@@ -21,22 +22,22 @@ FString SerializationTools::SerializationConf(const FUELaunchConf& SaveConfig)
 	JsonWriter->Close();
 	return JsonStr;
 }
-FUELaunchConf SerializationTools::DeSerializationConf(const FString& jsonConf)
+FLaunchConf SerializationTools::DeSerializationConf(const FString& jsonConf)
 {
-	FUELaunchConf loadConf;
+	FLaunchConf loadConf;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(jsonConf);
 	TSharedPtr<FJsonObject> JsonObject;
 	bool BFlag = FJsonSerializer::Deserialize(JsonReader, JsonObject);
 	if (BFlag)
 	{
-		loadConf.LaunchEngine = JsonObject->GetStringField(TEXT("LaunchEngine"));
-		loadConf.LaunchPlatfrom = JsonObject->GetStringField(TEXT("LaunchPlatfrom"));
-		loadConf.LaunchProject = JsonObject->GetStringField(TEXT("LaunchProject"));
+		loadConf.Engine = JsonObject->GetStringField(TEXT("Engine"));
+		loadConf.Platfrom = JsonObject->GetStringField(TEXT("Platfrom"));
+		loadConf.Project = JsonObject->GetStringField(TEXT("Project"));
 		loadConf.bUseCmdEngine = JsonObject->GetBoolField(TEXT("bUseCmdEngine"));
-		TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("LaunchParams");
+		TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("Params");
 		for (const auto& DataItem : LaunchParamsData)
 		{
-			loadConf.LaunchParams.Add(DataItem->AsObject()->GetStringField(TEXT("ParamItem")));
+			loadConf.Params.Add(DataItem->AsObject()->GetStringField(TEXT("ParamItem")));
 		}
 	}
 	return loadConf;

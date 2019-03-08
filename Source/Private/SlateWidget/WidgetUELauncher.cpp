@@ -546,7 +546,7 @@ FReply SWidgetUELauncher::BtnClickEventOpenVS()
 
 FReply SWidgetUELauncher::BtnClickEventClearConfig()
 {
-	FUELaunchConf DefaultConfig;
+	FLaunchConf DefaultConfig;
 	UpdateAll(DefaultConfig);
 	return FReply::Handled();
 }
@@ -578,7 +578,7 @@ FReply SWidgetUELauncher::BtnClickEventLoadConfig()
 				bool flag = FFileHelper::LoadFileToString(jsonValue, *SelectedLoadConfigPath);
 				if (flag)
 				{
-					FUELaunchConf conf=SerializationTools::DeSerializationConf(jsonValue);
+					FLaunchConf conf=SerializationTools::DeSerializationConf(jsonValue);
 					UpdateAll(conf);
 				}
 			}
@@ -622,22 +622,22 @@ FReply SWidgetUELauncher::BtnClickEventSaveConfig()
 
 
 
-void SWidgetUELauncher::UpdateAll(const FUELaunchConf& conf)
+void SWidgetUELauncher::UpdateAll(const FLaunchConf& conf)
 {
-	UpdateEngineSelector(RegisterEngineMap,conf.LaunchEngine);
-	UpdatePlatfromSelector(GetSelectedEnginePath(),conf.LaunchPlatfrom);
-	UpdateSelectedProject(conf.LaunchProject);
-	UpdateLaunchParams(conf.LaunchParams);
+	UpdateEngineSelector(RegisterEngineMap,conf.Engine);
+	UpdatePlatfromSelector(GetSelectedEnginePath(),conf.Platfrom);
+	UpdateSelectedProject(conf.Project);
+	UpdateLaunchParams(conf.Params);
 	UpdateUseCmdEngine(conf.bUseCmdEngine);
 }
-FUELaunchConf SWidgetUELauncher::GetLaunchConf()const
+FLaunchConf SWidgetUELauncher::GetLaunchConf()const
 {
-	FUELaunchConf Conf;
-	Conf.LaunchEngine = GetSelectedEnginePath();
-	Conf.LaunchPlatfrom = GetSelectedPlatfrom();
+	FLaunchConf Conf;
+	Conf.Engine = GetSelectedEnginePath();
+	Conf.Platfrom = GetSelectedPlatfrom();
 	Conf.bUseCmdEngine = GetUseCmdEngine();
-	Conf.LaunchParams = GetAllLaunchParams();
-	Conf.LaunchProject = GetSelectedProjectPath();
+	Conf.Params = GetAllLaunchParams();
+	Conf.Project = GetSelectedProjectPath();
 	return Conf;
 }
 FString SWidgetUELauncher::GetSelectedPlatfrom()const
@@ -759,9 +759,9 @@ void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& Engin
 void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString DefaultPlatfrom)
 {
 
-	FUELaunchConf Conf;
-	Conf.LaunchEngine = EnginePath;
-	Conf.LaunchPlatfrom = DefaultPlatfrom;
+	FLaunchConf Conf;
+	Conf.Engine = EnginePath;
+	Conf.Platfrom = DefaultPlatfrom;
 
 	int32 local_DefaultPlatfromIndex=0;
 	SelectorPlatfromList.Empty();
@@ -772,7 +772,7 @@ void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString
 
 	for (const auto& PlatfromItem : Platfroms)
 	{
-		Conf.LaunchPlatfrom = *PlatfromItem;
+		Conf.Platfrom = *PlatfromItem;
 		if (FPaths::FileExists(EngineLaunchTools::GetEngineBinPath(Conf)))
 		{
 			int32 Index = SelectorPlatfromList.AddUnique(PlatfromItem);

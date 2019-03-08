@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/SWidget.h"
-#include "Data/FUELaunchConf.h"
+#include "Data/FLaunchConf.h"
 
 
 class SEditableBoxWraper;
@@ -72,7 +72,7 @@ public:
 	bool GetUseCmdEngine()const;
 	// Get All Launch Parameters
 	TArray<FString> GetAllLaunchParams()const;
-	FUELaunchConf GetLaunchConf()const;
+	FLaunchConf GetLaunchConf()const;
 
 public:
 	// Add/Clear Launch parameter button clicked event
@@ -114,7 +114,7 @@ public:
 	void UpdateLaunchParams(const TArray<FString>& pParamsArray = TArray<FString>{});
 
 	// Update ALL
-	void UpdateAll(const FUELaunchConf& conf);
+	void UpdateAll(const FLaunchConf& conf);
 protected:
 
 	//FReply DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget);

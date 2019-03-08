@@ -6,6 +6,6 @@
 class SerializationTools
 {
 public:
-	static FString SerializationConf(const FUELaunchConf& SaveConfig);
-	static FUELaunchConf DeSerializationConf(const FString& jsonConf);
+	static FString SerializationConf(const FLaunchConf& SaveConfig);
+	static FLaunchConf DeSerializationConf(const FString& jsonConf);
 };

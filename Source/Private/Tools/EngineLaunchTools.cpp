@@ -1,30 +1,30 @@
 #include "Tools/EngineLaunchTools.h"
 
 
-bool EngineLaunchTools::EngineLauncher(const FUELaunchConf& conf)
+bool EngineLaunchTools::EngineLauncher(const FLaunchConf& conf)
 {
-	if(!(conf.LaunchEngine.Len()>0 && FPaths::FileExists(GetEngineBinPath(conf))))
+	if(!(conf.Engine.Len()>0 && FPaths::FileExists(GetEngineBinPath(conf))))
 		return false;
 	FPlatformProcess::CreateProc(*GetEngineBinPath(conf), *CombineLaunchParams(conf), true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return true;
 }
 
-FString EngineLaunchTools::GetEngineBinPath(const FUELaunchConf& conf)
+FString EngineLaunchTools::GetEngineBinPath(const FLaunchConf& conf)
 {
 #define EXECUTABLE_FORMAT TEXT(".exe")
 	FString EngineProgramName = conf.bUseCmdEngine ? TEXT("UE4Editor-cmd") : TEXT("UE4Editor");
-	FString resault(FPaths::Combine(*conf.LaunchEngine, TEXT("Engine/Binaries/"),*conf.LaunchPlatfrom,*(EngineProgramName + EXECUTABLE_FORMAT)));
+	FString resault(FPaths::Combine(*conf.Engine, TEXT("Engine/Binaries/"),*conf.Platfrom,*(EngineProgramName + EXECUTABLE_FORMAT)));
 #undef EXECUTABLE_FORMAT
 	return resault;
 }
-FString EngineLaunchTools::CombineLaunchParams(const FUELaunchConf& conf)
+FString EngineLaunchTools::CombineLaunchParams(const FLaunchConf& conf)
 {
 	FString resault;
 
-	resault.Append(conf.LaunchProject);
+	resault.Append(conf.Project);
 	resault.Append(TEXT(""));
 
-	for(const auto& ParamItem:conf.LaunchParams)
+	for(const auto& ParamItem:conf.Params)
 	{
 		resault.Append(" ");
 		resault.Append(ParamItem);
@@ -70,6 +70,7 @@ void EngineLaunchTools::RegisterValueWriter(HKEY hKey, DWORD dwType,const FStrin
 }
 void EngineLaunchTools::UE4LauncherRegisterWriter()
 {
+
 	struct FValueRegister
 	{
 		FValueRegister(HKEY Key, DWORD pdwType,const FString& pSubKey, const FString& pValueName, const FString& pData,bool pIsDefaultValue=false):
@@ -102,6 +103,15 @@ void EngineLaunchTools::UE4LauncherRegisterWriter()
 
 
 	}
-	
+}
 
+
+FString EngineLaunchTools::GetCurrentWorkDirectory()
+{
+#define MAX_NUM 1024
+	WCHAR CurrentDir[MAX_NUM];
+	GetCurrentDirectory(MAX_NUM - 1, CurrentDir);
+#undef  MAX_NUM
+
+	return FString(CurrentDir);
 }
