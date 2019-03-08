@@ -22,6 +22,7 @@ IMPLEMENT_APPLICATION(UE4Launcher, "UE4Launcher");
 
 int RealExecutionMain(const TCHAR* pCmdLine)
 {
+	// add .uejson file mapping for administrator user
 	EngineLaunchTools::UE4LauncherRegisterWriter();
 
 	FCommandLine::Set(pCmdLine);

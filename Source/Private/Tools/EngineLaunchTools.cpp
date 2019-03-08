@@ -85,7 +85,7 @@ void EngineLaunchTools::UE4LauncherRegisterWriter()
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT(".uejson"),TEXT(""),TEXT("UE4Launcher.ProjectFile"),true },
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\DefaultIcon"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1"),true },
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT(""),TEXT("Edit Config") ,true},
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT("Icon"),TEXT("\"C:\\Program Files(x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1")},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT("Icon"),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1")},
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit\\command"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\" -e \"%1\"") ,true},
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT(""),TEXT("Launch Config") ,true},
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT("Icon"),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\"")},
