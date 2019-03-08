@@ -22,6 +22,8 @@ IMPLEMENT_APPLICATION(UE4Launcher, "UE4Launcher");
 
 int RealExecutionMain(const TCHAR* pCmdLine)
 {
+	EngineLaunchTools::UE4LauncherRegisterWriter();
+
 	FCommandLine::Set(pCmdLine);
 	// start up the main loop
 	GEngineLoop.PreInit(pCmdLine);

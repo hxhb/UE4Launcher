@@ -56,15 +56,52 @@ TArray<FString> EngineLaunchTools::GetAllRegistedEngineList(const TMap<FString, 
 }
 
 
-void EngineLaunchTools::RegisterLaunchFileMaping()
+void EngineLaunchTools::RegisterValueWriter(HKEY hKey, DWORD dwType,const FString& lpSubKey, const FString& lpValueName,const FString& lpData,bool SetAsDefaultValue)
 {
-	TCHAR* RegisterPath = TEXT("UE4Launcher.ProjectFile");
-	FString ProgramName(TEXT("UE4Launcher.exe"));
 	HKEY hRootKey;
-	if (RegCreateKeyEx(HKEY_CLASSES_ROOT, RegisterPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hRootKey, NULL) == ERROR_SUCCESS)
+	if (RegCreateKeyEx(hKey, *lpSubKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hRootKey, NULL) == ERROR_SUCCESS)
 	{
-		FString NewIdentifier = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensInBraces);
-		LRESULT SetResult = RegSetValueEx(hRootKey, NULL, 0, REG_SZ, (const BYTE*)*ProgramName, (ProgramName.Len() + 1) * sizeof(TCHAR));
+		if (SetAsDefaultValue)
+			RegSetValue(hKey, *lpSubKey, dwType, *lpData, (lpData.Len() + 1) * sizeof(TCHAR));
+		else
+			RegSetValueEx(hRootKey, *lpValueName, 0, dwType, (const BYTE*)*lpData, (lpData.Len() + 1) * sizeof(TCHAR));
 		RegCloseKey(hRootKey);
 	}
+}
+void EngineLaunchTools::UE4LauncherRegisterWriter()
+{
+	struct FValueRegister
+	{
+		FValueRegister(HKEY Key, DWORD pdwType,const FString& pSubKey, const FString& pValueName, const FString& pData,bool pIsDefaultValue=false):
+		hKey(Key), dwType(pdwType),lpSubKey(pSubKey),lpValueName(pValueName),lpData(pData), lpIsDefaultValue(pIsDefaultValue){}
+		HKEY hKey;
+		DWORD dwType;
+		FString lpSubKey;
+		FString lpValueName;
+		FString lpData;
+		bool lpIsDefaultValue;
+	};
+	TArray<FValueRegister> WaitWrite{
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT(".uejson"),TEXT(""),TEXT("UE4Launcher.ProjectFile"),true },
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\DefaultIcon"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1"),true },
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT(""),TEXT("Edit Config") ,true},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT("Icon"),TEXT("\"C:\\Program Files(x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1")},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit\\command"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\" -e \"%1\"") ,true},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT(""),TEXT("Launch Config") ,true},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT("Icon"),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\"")},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run\\command"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\" -c \"%1\""), true}
+	};
+	for (const auto& RegisterItem : WaitWrite)
+	{
+		EngineLaunchTools::RegisterValueWriter(RegisterItem.hKey,
+											   RegisterItem.dwType,
+											   RegisterItem.lpSubKey,
+											   RegisterItem.lpValueName,
+											   RegisterItem.lpData,
+											   RegisterItem.lpIsDefaultValue);
+
+
+	}
+	
+
 }
