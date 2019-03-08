@@ -10,7 +10,7 @@
 #include "Widgets/SCompoundWidget.h"
 
 
-DECLARE_DELEGATE_RetVal(FString,FSelectorItemChanged)
+DECLARE_DELEGATE_OneParam(FSelectorItemChanged,const FString&)
 
 class SCombBoxWarper : public SCompoundWidget
 {
@@ -28,7 +28,8 @@ public:
 	TSharedRef<SWidget> HandleGenerateWidget(TSharedPtr<FString> InItem);
 	FText HandleSelectionChangeText() const;
 public:
-	void UpdateSelector(const TArray<FString>& SelectorList,const FString& SelectedItem);
+	void UpdateSelector(const TArray<FString>& SelectorList,const FString& SelectedItem=TEXT(""));
+	void ClearAllSelectItem();
 	FString GetCurretSelectedItem()const;
 
 

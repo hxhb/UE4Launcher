@@ -10,7 +10,7 @@
 #include "IWebBrowserPopupFeatures.h"
 
 // project files
-#include "SlateWidget/WidgetUELauncher.h"
+#include "SlateWidget/SConfPanel.h"
 #include "Data/FLaunchConf.h"
 #include "Tools/EngineLaunchTools.h"
 #include "Tools/SerializationTools.h"
@@ -63,7 +63,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	}
 	else
 	{
-		TSharedPtr<SWidgetUELauncher> pLauncherWidget;
+		TSharedPtr < SConfPanel > LauncherPanel;
 		TSharedPtr<SWindow> MainWindow = SNew(SWindow)
 										.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
 										.ScreenPosition(FVector2D(520, 550))
@@ -76,14 +76,14 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 										.MinWidth(520)
 										.IsTopmostWindow(false)
 										[
-											SAssignNew(pLauncherWidget, SWidgetUELauncher)
+											SAssignNew(LauncherPanel, SConfPanel)
 										];
 
 		// show the window
 		FSlateApplication::Get().AddWindow(MainWindow.ToSharedRef());
 
 		// use config
-		pLauncherWidget->UpdateAll(DefaultConfig);
+		LauncherPanel->UpdateAll(DefaultConfig);
 
 		// main loop
 		while (!GIsRequestingExit)

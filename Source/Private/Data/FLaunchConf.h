@@ -8,9 +8,8 @@
 struct FLaunchConf
 {
 	FString Engine;
-	FString Platfrom;
 	FString Project;
 	FString Tool;
+	FString ToolPreArgs;
 	TArray<FString> Params;
-	bool bUseCmdEngine=false;
 };

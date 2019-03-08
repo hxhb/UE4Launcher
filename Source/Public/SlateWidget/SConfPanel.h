@@ -3,19 +3,19 @@
 #include "CoreMinimal.h"
 #include "Widgets/SWidget.h"
 #include "Data/FLaunchConf.h"
-
+#include "Tools/EngineLaunchTools.h"
 
 class SEditableBoxWraper;
-class SWidgetUELauncher;
+class SConfPanel;
 
 /** @return a new Drag and Drop test widget */
 TSharedRef<SWidget> MakeWidgetUELauncher();
 
-class SWidgetUELauncher :public SCompoundWidget
+class SConfPanel :public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SWidgetUELauncher) { }
+	SLATE_BEGIN_ARGS(SConfPanel) { }
 	SLATE_END_ARGS()
 
 public:
@@ -26,33 +26,6 @@ public:
 	 * @param InArgs - Construction arguments.
 	 */
 	void Construct(const FArguments& InArgs);
-public:
-	// Engine Version Selector Event
-	void HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
-	TSharedRef<SWidget> HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem);
-	FText HandleCmdEngineSelectionChangeText() const;
-
-private:
-	// Engine Version
-	TSharedPtr<FString>	CmbSelectCurrentEngine;
-	TSharedPtr<SComboBox<TSharedPtr<FString>>> CmdWidgetEngineSelector;
-	TArray<TSharedPtr<FString> > SelectorInstalledEngineList;
-
-public:
-	// Platfrom Selector Event
-	void HandleCmbPlatfromSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
-	TSharedRef<SWidget> HandleCmbPlatfromGenerateWidget(TSharedPtr<FString> InItem);
-	FText HandleCmdPlatfromSelectionChangeText() const;
-
-private:
-	// Engine Version
-	TSharedPtr<FString>	CmbSelectCurrentPlatfrom;
-	TSharedPtr<SComboBox<TSharedPtr<FString> > > CmdWidgetPlatfromSelector;
-	TArray<TSharedPtr<FString> > SelectorPlatfromList;
-
-public:
-	void HandleUseCmdCBStateChanged(ECheckBoxState NewState, bool* CheckBoxThatChanged);
-	ECheckBoxState HandleUseCmdCBStateIsChecked(bool* CheckBox) const;
 	
 
 public:
@@ -66,13 +39,14 @@ public:
 	FString GetSelectedEnginePath()const;
 	// get Selected .uproject file path
 	FString GetSelectedProjectPath()const;
-	// Get Selected Platfrom Win32/Win64
-	FString GetSelectedPlatfrom()const;
-	// UseCmdEngine is Checked?
-	bool GetUseCmdEngine()const;
+	// Get Selected Tool
+	FString GetSelectedTool()const;
 	// Get All Launch Parameters
 	TArray<FString> GetAllLaunchParams()const;
+	// Get All Conf
 	FLaunchConf GetLaunchConf()const;
+
+
 
 public:
 	// Add/Clear Launch parameter button clicked event
@@ -101,15 +75,12 @@ public:
 public:
 	// Update Engine Selector
 	void UpdateEngineSelector(const TMap<FString, FString>& pEngineMap, FString DefaultEngine = TEXT(""));
-	// Updator
+	// Update Tools Selector
+	void UpdateToolSelector(const TArray<FString>& ToolsList,const FString& DefaultTool=TEXT(""));
+	// Update is show OpenVS Button
 	void UpdateOpenVSButton(const FString& EnginePath);
-	// Update Platfrom Info from EnginePath
-	void UpdatePlatfromSelector(const FString& EnginePath, FString DefaultPlatfrom=TEXT(""));
-	// Update Selected Platfrom
-	void UpdateSelectedPlatfrom(const FString& Platfrom);
+	
 	void UpdateSelectedProject(const FString& ProjectPath=TEXT(""));
-	// Update Use UEEditor-cmd
-	void UpdateUseCmdEngine(bool pUseCmd=false);
 
 	void UpdateLaunchParams(const TArray<FString>& pParamsArray = TArray<FString>{});
 
@@ -121,25 +92,31 @@ protected:
 	// Create/Add a Editable Parameter Box.
 	TSharedRef<SEditableBoxWraper> CreateEditableTextBox(const FString& TextContent);
 	void AddParamTextBoxToSlot(const FString& TextContent=TEXT(""));
-
+public:
+	void HandleEngineSelectorChanged(const FString& NewEngine);
 
 private:
 	// Main panel scrollbox
 	TSharedPtr<SScrollBox> SrbWidgetMain;
-	TMap<FString, FString> RegisterEngineMap;
+	// Selector
+	TSharedPtr<class SCombBoxWarper> CmbEngineSelector;
+	TSharedPtr<class SCombBoxWarper> CmbToolSelector;
 	// Add Launch Parameter
 	TSharedPtr<SScrollBox> SrbWidgetLaunchParams;
-	// open .uproject file
-	FString OpenProjectFilePath;
 	// button
 	TSharedPtr<SButton> BtnLaunchEngine;
 	TSharedPtr<SButton> BtnOpenVS;
 	TSharedPtr<SButton> BtnLaunchProject;
-	// UseCmd SCheckedBox
-	TSharedPtr<SCheckBox> CbUseCmdEngine;
+
 	// Button Text
 	mutable FString LaunchEngineBtnText{ TEXT("Launch") };
 	mutable FString LaunchProjectBtnText{ TEXT("Launch Configuration") };
-	bool bUseCmdEngine = false;
 
+	// opened .uproject file
+	FString OpenProjectFilePath;
+private:
+	// general data
+	TMap<FString, FString> RegisterEngineMap;
+	
 };
+

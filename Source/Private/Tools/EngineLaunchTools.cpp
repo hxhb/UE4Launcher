@@ -1,28 +1,29 @@
 #include "Tools/EngineLaunchTools.h"
-
+#include <shellapi.h>
 
 bool EngineLaunchTools::EngineLauncher(const FLaunchConf& conf)
 {
-	if(!(conf.Engine.Len()>0 && FPaths::FileExists(GetEngineBinPath(conf))))
+	FString BinPath = EngineLaunchTools::GetToolBinPath(conf);
+	if(!(conf.Engine.Len()>0 && FPaths::FileExists(BinPath)))
 		return false;
-	FPlatformProcess::CreateProc(*GetEngineBinPath(conf), *CombineLaunchParams(conf), true, false, false, NULL, NULL, NULL, NULL, NULL);
+	FString AllParams = CombineLaunchParams(conf);
+	FPlatformProcess::CreateProc(*BinPath, *AllParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return true;
 }
 
-FString EngineLaunchTools::GetEngineBinPath(const FLaunchConf& conf)
-{
-#define EXECUTABLE_FORMAT TEXT(".exe")
-	FString EngineProgramName = conf.bUseCmdEngine ? TEXT("UE4Editor-cmd") : TEXT("UE4Editor");
-	FString resault(FPaths::Combine(*conf.Engine, TEXT("Engine/Binaries/"),*conf.Platfrom,*(EngineProgramName + EXECUTABLE_FORMAT)));
-#undef EXECUTABLE_FORMAT
-	return resault;
-}
+//FString EngineLaunchTools::GetEngineBinPath(const FLaunchConf& conf)
+//{
+//#define EXECUTABLE_FORMAT TEXT(".exe")
+//	FString resault(FPaths::Combine(*conf.Engine, TEXT("Engine/Binaries/"),*conf.Platfrom,*(conf.Tool + EXECUTABLE_FORMAT)));
+//#undef EXECUTABLE_FORMAT
+//	return resault;
+//}
 FString EngineLaunchTools::CombineLaunchParams(const FLaunchConf& conf)
 {
-	FString resault;
-
-	resault.Append(conf.Project);
-	resault.Append(TEXT(""));
+	FString resault(TEXT(""));
+	if (!conf.ToolPreArgs.IsEmpty())
+		resault.Append(conf.ToolPreArgs);
+	resault.Append(TEXT("\"")).Append(conf.Project).Append(TEXT("\" "));
 
 	for(const auto& ParamItem:conf.Params)
 	{
@@ -82,15 +83,16 @@ void EngineLaunchTools::UE4LauncherRegisterWriter()
 		FString lpData;
 		bool lpIsDefaultValue;
 	};
+	FString ExecutableProgramPath = TEXT("\"")+EngineLaunchTools::GetCurrentProgramFullName()+ TEXT("\"");
 	TArray<FValueRegister> WaitWrite{
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT(".uejson"),TEXT(""),TEXT("UE4Launcher.ProjectFile"),true },
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\DefaultIcon"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1"),true },
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\DefaultIcon"),TEXT(""),ExecutableProgramPath+TEXT(",1"),true },
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT(""),TEXT("Edit Config") ,true},
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT("Icon"),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\",1")},
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit\\command"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\" -e \"%1\"") ,true},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit"),TEXT("Icon"),ExecutableProgramPath + TEXT(",1")},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit\\command"),TEXT(""),ExecutableProgramPath + TEXT(" -e \"%1\"") ,true},
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT(""),TEXT("Launch Config") ,true},
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT("Icon"),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\"")},
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run\\command"),TEXT(""),TEXT("\"C:\\Program Files (x86)\\UE4Launcher\\Engine\\Binaries\\Win64\\UE4Launcher.exe\" -c \"%1\""), true}
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT("Icon"),ExecutableProgramPath},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run\\command"),TEXT(""),ExecutableProgramPath+TEXT(" -c \"%1\""), true}
 	};
 	for (const auto& RegisterItem : WaitWrite)
 	{
@@ -100,11 +102,16 @@ void EngineLaunchTools::UE4LauncherRegisterWriter()
 											   RegisterItem.lpValueName,
 											   RegisterItem.lpData,
 											   RegisterItem.lpIsDefaultValue);
-
-
 	}
 }
 
+FString EngineLaunchTools::GetCurrentProgramFullName()
+{
+	LPWSTR *ArgcList;
+	int Argv = 0;
+	ArgcList = CommandLineToArgvW(GetCommandLineW(), &Argv);
+	return FString(ArgcList[0]);
+}
 
 FString EngineLaunchTools::GetCurrentWorkDirectory()
 {
@@ -114,4 +121,45 @@ FString EngineLaunchTools::GetCurrentWorkDirectory()
 #undef  MAX_NUM
 
 	return FString(CurrentDir);
+}
+
+
+TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
+{
+	return TArray<FToolInfo>{
+		{TEXT("UE4Editor"), TEXT(""), TEXT("Engine/Binaries/Win64")},
+		{ TEXT("UE4Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") }
+	};
+}
+
+TArray<FString> EngineLaunchTools::GetToolList()
+{
+	TArray<FString> resault;
+	for (const auto& ToolItem : EngineLaunchTools::GetToolsInfoList())
+	{
+		resault.Add(ToolItem.ToolName);
+	}
+	return resault;
+}
+
+FToolInfo EngineLaunchTools::GetToolInfo(const FString& ToolName)
+{
+	for (const auto& ToolItem : EngineLaunchTools::GetToolsInfoList())
+	{
+		if (ToolItem.ToolName.Equals(ToolName))
+		{
+			return ToolItem;
+		}
+	}
+	return FToolInfo{};
+}
+
+FString EngineLaunchTools::GetToolBinPath(const FLaunchConf& conf)
+{
+#define PLATFROM_EXECUTABLE_FORMAT TEXT(".exe")
+	FString resault(TEXT(""));
+	FToolInfo ToolInfo = EngineLaunchTools::GetToolInfo(conf.Tool);
+	resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
+#undef PLATFROM_EXECUTABLE_FORMAT
+	return resault;
 }

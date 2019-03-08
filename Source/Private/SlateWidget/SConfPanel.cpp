@@ -1,6 +1,6 @@
 //// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 //
-#include "SlateWidget/WidgetUELauncher.h"
+#include "SlateWidget/SConfPanel.h"
 
 #include "Animation/CurveSequence.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
@@ -49,6 +49,8 @@
 
 // project files
 #include "SlateWidget/SEditableBoxWraper.h"
+#include "SlateWidget/SCombBoxWarper.h"
+
 #include "Tools/SerializationTools.h"
 #include "Tools/EngineLaunchTools.h"
 #include "Tools/SlateWidgetTools.h"
@@ -57,7 +59,7 @@
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-void SWidgetUELauncher::Construct(const FArguments& InArgs)
+void SConfPanel::Construct(const FArguments& InArgs)
 {
 	ChildSlot
 	[
@@ -99,21 +101,21 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 												SNew(SButton)
 												.Text(LOCTEXT("LoadConfig", "Load Config"))
 												.HAlign(HAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::BtnClickEventLoadConfig)
+												.OnClicked(this, &SConfPanel::BtnClickEventLoadConfig)
 											]
 										+ SHorizontalBox::Slot()
 											[
 												SNew(SButton)
 												.Text(LOCTEXT("SaveConfig", "Save Config"))
 											.HAlign(HAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::BtnClickEventSaveConfig)
+											.OnClicked(this, &SConfPanel::BtnClickEventSaveConfig)
 											]
 										+SHorizontalBox::Slot()
 											.HAlign(HAlign_Center)
 											[
 												SNew(SHyperlink)
 													.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
-													.OnNavigate(this, &SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite)
+													.OnNavigate(this, &SConfPanel::HyLinkClickEventOpenDeveloperWebsite)
 											]
 									]
 								]
@@ -130,7 +132,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 							]
 						+ SGridPanel::Slot(0, 2)
 							.HAlign(HAlign_Fill)
-							.Padding(0.0f, 3.0f)
+							.Padding(0.0f, 2.0f,0.0f,0.0f)
 							[
 								SNew(SVerticalBox)
 								+ SVerticalBox::Slot()
@@ -142,14 +144,6 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 										SNew(STextBlock)
 										.Text(LOCTEXT("SelectEngine", "Select Engine Version:"))
 									]
-									//+ SHorizontalBox::Slot()
-									//.AutoWidth()
-									//.HAlign(HAlign_Right)
-									//[
-									//	SNew(SHyperlink)
-									//	.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
-									//	.OnNavigate(this, &SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite)
-									//]
 
 								]
 								+ SVerticalBox::Slot()
@@ -161,14 +155,15 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 										.AutoWidth()
 										.HAlign(HAlign_Left)
 										[
-											SAssignNew(CmdWidgetEngineSelector, SComboBox<TSharedPtr<FString>>)
-											.OptionsSource(&SelectorInstalledEngineList)
-											.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbEngineSelectionChanged)
-											.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbEngineGenerateWidget)
-											[
-												SNew(STextBlock)
-												.Text(this, &SWidgetUELauncher::HandleCmdEngineSelectionChangeText)
-											]
+									
+											SAssignNew(CmbEngineSelector,SCombBoxWarper)
+											.OnSelectorItemChanged(this,&SConfPanel::HandleEngineSelectorChanged)
+										]
+										+ SHorizontalBox::Slot()
+										.AutoWidth()
+										.HAlign(HAlign_Left)
+										[
+											SAssignNew(CmbToolSelector, SCombBoxWarper)
 										]
 										+ SHorizontalBox::Slot()
 										.HAlign(HAlign_Left)
@@ -176,8 +171,8 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 										[
 											SAssignNew(BtnLaunchEngine, SButton)
 											//.Text(LOCTEXT("LaunchEngine", "Launch"))
-											.Text(this, &SWidgetUELauncher::GetLaunchEngineBtnText)
-											.OnClicked(this, &SWidgetUELauncher::BtnClickEventLaunchEngine)
+											.Text(this, &SConfPanel::GetLaunchEngineBtnText)
+											.OnClicked(this, &SConfPanel::BtnClickEventLaunchEngine)
 										]
 										+ SHorizontalBox::Slot()
 											.HAlign(HAlign_Left)
@@ -185,65 +180,14 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											[
 												SAssignNew(BtnOpenVS, SButton)
 												.Text(LOCTEXT("OpenVS", "OpenVS"))
-												.OnClicked(this, &SWidgetUELauncher::BtnClickEventOpenVS)
+												.OnClicked(this, &SConfPanel::BtnClickEventOpenVS)
 											]
 									]
 							]
-					+ SGridPanel::Slot(0, 3)
-						.HAlign(HAlign_Fill)
-						.Padding(0.0f, 3.0f)
-						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-								.AutoWidth()
-								.HAlign(HAlign_Left)
-								.VAlign(VAlign_Center)
-								[
-									SNew(STextBlock)
-									.Text(LOCTEXT("SelectPlatfrom", "Platfrom:"))
-								]
-							+ SHorizontalBox::Slot()
-								.AutoWidth()
-								.HAlign(HAlign_Left)
-								.Padding(2.0f)
-								[
-									SAssignNew(CmdWidgetPlatfromSelector, SComboBox<TSharedPtr<FString>>)
-									.OptionsSource(&SelectorPlatfromList)
-									.OnSelectionChanged(this, &SWidgetUELauncher::HandleCmbPlatfromSelectionChanged)
-									.OnGenerateWidget(this, &SWidgetUELauncher::HandleCmbPlatfromGenerateWidget)
-									[
-										SNew(STextBlock)
-										.Text(this, &SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText)
-									]
-								]
-								+ SHorizontalBox::Slot()
-									.AutoWidth()
-									.HAlign(HAlign_Left)
-									.VAlign(VAlign_Center)
-									.Padding(5.0f, 0.0f, 0.0f, 0.0f)
-									[
-										SNew(STextBlock)
-										.Text(LOCTEXT("UseCmdEngine", "UseCmd:"))
-									]
-								+ SHorizontalBox::Slot()
-									.AutoWidth()
-									.HAlign(HAlign_Left)
-									.Padding(2.0f)
-									[
-										SAssignNew(CbUseCmdEngine, SCheckBox)
-										.IsChecked(this, &SWidgetUELauncher::HandleUseCmdCBStateIsChecked, &bUseCmdEngine)
-										.OnCheckStateChanged(this, &SWidgetUELauncher::HandleUseCmdCBStateChanged, &bUseCmdEngine)
-										[
-											SNew(STextBlock)
-											.Text(LOCTEXT("UE4EditorCMD", "UE4Editor-cmd"))
-
-										]
-									]
-						]
 					// open project location
 					+ SGridPanel::Slot(0, 4)
 						.HAlign(HAlign_Left)
-						.Padding(0.0f, 3.0f)
+						.Padding(0.0f, 2.0f, 0.0f, 0.0f)
 						[
 							SNew(SVerticalBox)
 							+ SVerticalBox::Slot()
@@ -262,9 +206,9 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 										.FillWidth(1.0f)
 										[
 											SNew(SEditableTextBox)
-											.Text(this, &SWidgetUELauncher::GetProjectFileText)
+											.Text(this, &SConfPanel::GetProjectFileText)
 											.HintText(LOCTEXT("SEditableTextBoxHint", "Please select you want launch .uproject file."))
-											.OnTextChanged(this, &SWidgetUELauncher::OnProjectFileTextBoxChanged)
+											.OnTextChanged(this, &SConfPanel::OnProjectFileTextBoxChanged)
 
 										]
 									// open uproject file button
@@ -276,7 +220,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											.Text(LOCTEXT("SelectProjectFile", "Select"))
 											.HAlign(HAlign_Center)
 											.VAlign(VAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::BtnClickEventOpenProjectFile)
+											.OnClicked(this, &SConfPanel::BtnClickEventOpenProjectFile)
 										]
 									+ SHorizontalBox::Slot()
 										//.FillWidth(0.3f)
@@ -286,7 +230,7 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											.Text(LOCTEXT("OpenInExplorer", "OpenDir"))
 											.HAlign(HAlign_Center)
 											.VAlign(VAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::BtnClickEventOpenProjectFileDir)
+											.OnClicked(this, &SConfPanel::BtnClickEventOpenProjectFileDir)
 										]
 								]
 
@@ -324,14 +268,14 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 											SNew(SButton)
 											.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
 											.HAlign(HAlign_Center)
-											.OnClicked(this, &SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton)
+											.OnClicked(this, &SConfPanel::BtnClickEventClearAllLaunchParamsButton)
 										]
 										+ SHorizontalBox::Slot()
 											[
 												SNew(SButton)
 												.Text(LOCTEXT("AddParameter", "Add Parameter"))
 												.HAlign(HAlign_Center)
-												.OnClicked(this, &SWidgetUELauncher::BtnClickEventAddLaunchParamButton)
+												.OnClicked(this, &SConfPanel::BtnClickEventAddLaunchParamButton)
 											]
 									]
 							]
@@ -359,36 +303,19 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 								.Text(LOCTEXT("ClearConfig","Clear Config"))
 								.HAlign(HAlign_Center)
 								.VAlign(VAlign_Center)
-								.OnClicked(this, &SWidgetUELauncher::BtnClickEventClearConfig)
+								.OnClicked(this, &SConfPanel::BtnClickEventClearConfig)
 							]
 							+SHorizontalBox::Slot()
 							[
 								SAssignNew(BtnLaunchProject, SButton)
-								.Text(this, &SWidgetUELauncher::GetLaunchProjectBtnText)
+								.Text(this, &SConfPanel::GetLaunchProjectBtnText)
 								.HAlign(HAlign_Center)
 								.VAlign(VAlign_Center)
-								.OnClicked(this, &SWidgetUELauncher::BtnClickEventLaunchProject)
+								.OnClicked(this, &SConfPanel::BtnClickEventLaunchProject)
 							]
 						]
 					]
 				]
-
-				//+SHorizontalBox::Slot()
-				//[
-				//	SNew(SVerticalBox)
-				//	+ SVerticalBox::Slot()
-				//	[
-				//		SNew(SHorizontalBox)
-				//			+ SHorizontalBox::Slot()
-				//			.HAlign(HAlign_Left)
-				//			[
-				//				SNew(STextBlock)
-				//				.Text(LOCTEXT("HistoryList", "History:"))
-				//			]
-				//	]
-				//]
-
-
 				]
 
 	];
@@ -396,77 +323,25 @@ void SWidgetUELauncher::Construct(const FArguments& InArgs)
 	TMap<FString, FString> EngineMap = EngineLaunchTools::GetAllRegistedEngineMap();
 	{
 		UpdateEngineSelector(EngineMap);
-		UpdatePlatfromSelector(GetSelectedEnginePath());
+		UpdateToolSelector(EngineLaunchTools::GetToolList());
 		UpdateSelectedProject();
 		UpdateLaunchParams();
-		UpdateUseCmdEngine();
 	}
 
 }
 
-
-
-// Engine
-void SWidgetUELauncher::HandleCmbEngineSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
-{
-	CmbSelectCurrentEngine = NewSelection;
-	UpdatePlatfromSelector(*CmbSelectCurrentEngine);
-	UpdateOpenVSButton(*NewSelection);
-}
-
-TSharedRef<SWidget> SWidgetUELauncher::HandleCmbEngineGenerateWidget(TSharedPtr<FString> InItem)
-{
-	return SNew(STextBlock)
-		.Text(FText::FromString(*InItem));
-}
-
-FText SWidgetUELauncher::HandleCmdEngineSelectionChangeText() const
-{
-	return CmbSelectCurrentEngine.IsValid() ? FText::FromString(*CmbSelectCurrentEngine) : FText::GetEmpty();
-}
-
-// Platfrom
-void SWidgetUELauncher::HandleCmbPlatfromSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
-{
-	CmbSelectCurrentPlatfrom = NewSelection;
-}
-
-TSharedRef<SWidget> SWidgetUELauncher::HandleCmbPlatfromGenerateWidget(TSharedPtr<FString> InItem)
-{
-	return SNew(STextBlock)
-		.Text(FText::FromString(*InItem));
-}
-
-FText SWidgetUELauncher::HandleCmdPlatfromSelectionChangeText() const
-{
-	return CmbSelectCurrentPlatfrom.IsValid() ? FText::FromString(*CmbSelectCurrentPlatfrom) : FText::GetEmpty();
-}
-
-ECheckBoxState SWidgetUELauncher::HandleUseCmdCBStateIsChecked(bool* CheckBox) const
-{
-	return (*CheckBox)
-		? ECheckBoxState::Checked
-		: ECheckBoxState::Unchecked;
-}
-void SWidgetUELauncher::HandleUseCmdCBStateChanged(ECheckBoxState NewState, bool* CheckBoxThatChanged)
-{
-	*CheckBoxThatChanged = (NewState == ECheckBoxState::Checked);
-}
-
-
-
-void SWidgetUELauncher::HyLinkClickEventOpenDeveloperWebsite()
+void SConfPanel::HyLinkClickEventOpenDeveloperWebsite()
 {
 	FPlatformProcess::LaunchURL(TEXT("https://imzlp.me"), NULL, NULL);
 }
 
 
-FReply SWidgetUELauncher::BtnClickEventAddLaunchParamButton()
+FReply SConfPanel::BtnClickEventAddLaunchParamButton()
 {
 	AddParamTextBoxToSlot(TEXT(""));
 	return FReply::Handled();
 }
-FReply SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton()
+FReply SConfPanel::BtnClickEventClearAllLaunchParamsButton()
 {
 	SrbWidgetLaunchParams->ClearChildren();
 	AddParamTextBoxToSlot(TEXT(""));
@@ -474,19 +349,19 @@ FReply SWidgetUELauncher::BtnClickEventClearAllLaunchParamsButton()
 }
 
 
-FReply SWidgetUELauncher::BtnClickEventLaunchEngine()
+FReply SConfPanel::BtnClickEventLaunchEngine()
 {
 	EngineLaunchTools::EngineLauncher(GetLaunchConf());
 	return FReply::Handled();
 }
 
-FReply SWidgetUELauncher::BtnClickEventLaunchProject()
+FReply SConfPanel::BtnClickEventLaunchProject()
 {
 	EngineLaunchTools::EngineLauncher(GetLaunchConf());
 
 	return FReply::Handled();
 }
-FReply SWidgetUELauncher::BtnClickEventOpenProjectFile()
+FReply SConfPanel::BtnClickEventOpenProjectFile()
 {
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 
@@ -513,7 +388,7 @@ FReply SWidgetUELauncher::BtnClickEventOpenProjectFile()
 	return FReply::Handled();
 }
 
-FReply SWidgetUELauncher::BtnClickEventOpenProjectFileDir()
+FReply SConfPanel::BtnClickEventOpenProjectFileDir()
 {
 	FString FinalCommdParas = TEXT("/e,/root,");
 	TArray<FString> OutArray;
@@ -536,7 +411,7 @@ FReply SWidgetUELauncher::BtnClickEventOpenProjectFileDir()
 	return FReply::Handled();
 }
 
-FReply SWidgetUELauncher::BtnClickEventOpenVS()
+FReply SConfPanel::BtnClickEventOpenVS()
 {
 	FString ue4sln = GetSelectedEnginePath() + TEXT("//UE4.sln");
 	FString FinalCmdParams = TEXT("/c start devenv.exe ") + ue4sln;
@@ -544,13 +419,13 @@ FReply SWidgetUELauncher::BtnClickEventOpenVS()
 	return FReply::Handled();
 }
 
-FReply SWidgetUELauncher::BtnClickEventClearConfig()
+FReply SConfPanel::BtnClickEventClearConfig()
 {
 	FLaunchConf DefaultConfig;
 	UpdateAll(DefaultConfig);
 	return FReply::Handled();
 }
-FReply SWidgetUELauncher::BtnClickEventLoadConfig()
+FReply SConfPanel::BtnClickEventLoadConfig()
 {
 	FString SelectedLoadConfigPath;
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
@@ -586,7 +461,7 @@ FReply SWidgetUELauncher::BtnClickEventLoadConfig()
 	}
 	return FReply::Handled();
 }
-FReply SWidgetUELauncher::BtnClickEventSaveConfig()
+FReply SConfPanel::BtnClickEventSaveConfig()
 {
 	FString SelectedSaveConfigPath;
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
@@ -620,65 +495,64 @@ FReply SWidgetUELauncher::BtnClickEventSaveConfig()
 }
 
 
+void SConfPanel::UpdateToolSelector(const TArray<FString>& ToolsList, const FString& DefaultTool)
+{
+	CmbToolSelector->ClearAllSelectItem();
+	CmbToolSelector->UpdateSelector(ToolsList, DefaultTool);
+}
 
-
-void SWidgetUELauncher::UpdateAll(const FLaunchConf& conf)
+void SConfPanel::UpdateAll(const FLaunchConf& conf)
 {
 	UpdateEngineSelector(RegisterEngineMap,conf.Engine);
-	UpdatePlatfromSelector(GetSelectedEnginePath(),conf.Platfrom);
+	UpdateToolSelector(EngineLaunchTools::GetToolList(), conf.Tool);
 	UpdateSelectedProject(conf.Project);
 	UpdateLaunchParams(conf.Params);
-	UpdateUseCmdEngine(conf.bUseCmdEngine);
 }
-FLaunchConf SWidgetUELauncher::GetLaunchConf()const
+FLaunchConf SConfPanel::GetLaunchConf()const
 {
 	FLaunchConf Conf;
 	Conf.Engine = GetSelectedEnginePath();
-	Conf.Platfrom = GetSelectedPlatfrom();
-	Conf.bUseCmdEngine = GetUseCmdEngine();
+	Conf.Tool = GetSelectedTool();
+	Conf.ToolPreArgs = EngineLaunchTools::GetToolInfo(GetSelectedTool()).PreArgs;
 	Conf.Params = GetAllLaunchParams();
 	Conf.Project = GetSelectedProjectPath();
 	return Conf;
 }
-FString SWidgetUELauncher::GetSelectedPlatfrom()const
-{
-	return *CmbSelectCurrentPlatfrom;
-}
 
-FText SWidgetUELauncher::GetProjectFileText()const
+FString SConfPanel::GetSelectedTool()const
+{
+	return CmbToolSelector->GetCurretSelectedItem();
+}
+FText SConfPanel::GetProjectFileText()const
 {
 	return FText::FromString(OpenProjectFilePath);
 }
 
-FString SWidgetUELauncher::GetSelectedEnginePath()const
+FString SConfPanel::GetSelectedEnginePath()const
 {
-	return *CmbSelectCurrentEngine;
+	return CmbEngineSelector->GetCurretSelectedItem();
 }
 
-FString SWidgetUELauncher::GetSelectedProjectPath()const
+FString SConfPanel::GetSelectedProjectPath()const
 {
 	return OpenProjectFilePath;
 }
 
-FText SWidgetUELauncher::GetLaunchEngineBtnText()const
+FText SConfPanel::GetLaunchEngineBtnText()const
 {
 	return FText::FromString(LaunchEngineBtnText);
 }
 
-FText SWidgetUELauncher::GetLaunchProjectBtnText()const
+FText SConfPanel::GetLaunchProjectBtnText()const
 {
 	return FText::FromString(LaunchProjectBtnText);
 }
-//#include "../Tools/HackPrivateMember.hpp"
-//DECL_HACK_PRIVATE_DATA(SScrollBox, TSharedPtr<SScrollPanel>, ScrollPanel)
 
-TArray<FString> SWidgetUELauncher::GetAllLaunchParams()const
+TArray<FString> SConfPanel::GetAllLaunchParams()const
 {
 	TArray<FString> resault;
 
 	SScrollBox* ScrollboxWidget = &*SrbWidgetLaunchParams;
-	//SPanel* ScrollPanelWidget = reinterpret_cast<SPanel*>(&*(GET_VAR_PRIVATE_DATA_MEMBER(ScrollboxWidget, SScrollBox, ScrollPanel)));
-
 	FChildren* ScrollBoxChildren = SlateWidgetTools::GetScrollBoxChildren(ScrollboxWidget);
 
 	if (ScrollBoxChildren->Num() > 0)
@@ -701,28 +575,18 @@ TArray<FString> SWidgetUELauncher::GetAllLaunchParams()const
 	return resault;
 }
 
-bool SWidgetUELauncher::GetUseCmdEngine()const
-{
-	return bUseCmdEngine;
-}
 
-TSharedRef<SEditableBoxWraper> SWidgetUELauncher::CreateEditableTextBox(const FString& TextContent)
+TSharedRef<SEditableBoxWraper> SConfPanel::CreateEditableTextBox(const FString& TextContent)
 {
 	TSharedRef<SEditableBoxWraper> CreatedWidget = SNew(SEditableBoxWraper)
 		.EditableHintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
 		.EditableText(FText::FromString(TextContent))
 		.BtnClearText(FText::FromString(TEXT("C")))
 		.BtnDeleteText(FText::FromString(TEXT("D")));
-			//.OnDeleteClicked(this, &SWidgetUELauncher::DeleteParamExitableBoxWidget);
 	return CreatedWidget;
 }
-//
-//FReply SWidgetUELauncher::DeleteParamExitableBoxWidget(TSharedPtr<SEditableBoxWraper> pWidget)
-//{
-//		SrbWidgetLaunchParams->RemoveSlot(pWidget.ToSharedRef());
-//	return FReply::Handled();
-//}
-void SWidgetUELauncher::AddParamTextBoxToSlot(const FString& TextContent)
+
+void SConfPanel::AddParamTextBoxToSlot(const FString& TextContent)
 {
 	SrbWidgetLaunchParams->AddSlot()
 		.Padding(0.0f, 3.0f)
@@ -732,74 +596,19 @@ void SWidgetUELauncher::AddParamTextBoxToSlot(const FString& TextContent)
 	SrbWidgetLaunchParams->ScrollToEnd();
 	SrbWidgetMain->ScrollToEnd();
 }
-void SWidgetUELauncher::UpdateEngineSelector(const TMap<FString, FString>& EngineMap, FString DefaultEngine)
+
+void SConfPanel::HandleEngineSelectorChanged(const FString& NewEngine)
 {
-	// initialize SComboBox
-	{
-		bool bUseDefaultEngine=false;
-		int32 DefaultIndex = 0;
-		RegisterEngineMap = EngineMap;
-		SelectorInstalledEngineList.Empty();
-		for (const FString& EnginePath : EngineLaunchTools::GetAllRegistedEngineList(RegisterEngineMap))
-		{
-			int32 index=SelectorInstalledEngineList.Add(MakeShareable(new FString(EnginePath)));
-			if (!bUseDefaultEngine)
-			{
-				bUseDefaultEngine = !DefaultEngine.IsEmpty() && EnginePath.Equals(DefaultEngine);
-				DefaultIndex = index;
-			}
-		}
-
-		CmbSelectCurrentEngine = SelectorInstalledEngineList[DefaultIndex];
-
-		CmdWidgetEngineSelector->RefreshOptions();
-		CmdWidgetEngineSelector->SetSelectedItem(CmbSelectCurrentEngine);
-	}
-}
-void SWidgetUELauncher::UpdatePlatfromSelector(const FString& EnginePath,FString DefaultPlatfrom)
-{
-
-	FLaunchConf Conf;
-	Conf.Engine = EnginePath;
-	Conf.Platfrom = DefaultPlatfrom;
-
-	int32 local_DefaultPlatfromIndex=0;
-	SelectorPlatfromList.Empty();
-	TArray<TSharedPtr<FString>> Platfroms = {
-		MakeShareable(new FString(TEXT("Win64"))),
-		MakeShareable(new FString(TEXT("Win32")))
-	};
-
-	for (const auto& PlatfromItem : Platfroms)
-	{
-		Conf.Platfrom = *PlatfromItem;
-		if (FPaths::FileExists(EngineLaunchTools::GetEngineBinPath(Conf)))
-		{
-			int32 Index = SelectorPlatfromList.AddUnique(PlatfromItem);
-			if (!DefaultPlatfrom.IsEmpty() && PlatfromItem->Equals(DefaultPlatfrom))
-			{
-				local_DefaultPlatfromIndex = Index;
-			}
-		}
-
-	}
-	if (SelectorPlatfromList.Num() > 0)
-	{
-		CmbSelectCurrentPlatfrom = SelectorPlatfromList[local_DefaultPlatfromIndex];
-
-		CmdWidgetPlatfromSelector->RefreshOptions();
-		CmdWidgetPlatfromSelector->SetSelectedItem(CmbSelectCurrentPlatfrom);
-	}
-
-#undef EXECUTABLE_FORMAT
+	UpdateOpenVSButton(NewEngine);
 }
 
-void SWidgetUELauncher::UpdateSelectedPlatfrom(const FString& Platfrom)
-{
-	UpdatePlatfromSelector(GetSelectedEnginePath(),Platfrom);
 
+void SConfPanel::UpdateEngineSelector(const TMap<FString, FString>& EngineMap, FString DefaultEngine)
+{
+	CmbEngineSelector->UpdateSelector(EngineLaunchTools::GetAllRegistedEngineList(EngineMap));
 }
-void SWidgetUELauncher::UpdateOpenVSButton(const FString& EnginePath)
+
+void SConfPanel::UpdateOpenVSButton(const FString& EnginePath)
 {
 	bool IsLauncherInstalledEngine = FPaths::FileExists(EnginePath + TEXT("//Engine//Build//InstalledBuild.txt"));
 	{
@@ -811,14 +620,8 @@ void SWidgetUELauncher::UpdateOpenVSButton(const FString& EnginePath)
 	}
 }
 
-void SWidgetUELauncher::UpdateUseCmdEngine(bool pUseCmd)
-{
-	bUseCmdEngine = pUseCmd;
-	ECheckBoxState local_IsChecked = GetUseCmdEngine() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
-	CbUseCmdEngine->SetIsChecked(local_IsChecked);
-}
 
-void SWidgetUELauncher::UpdateLaunchParams(const TArray<FString>& pParamsArray)
+void SConfPanel::UpdateLaunchParams(const TArray<FString>& pParamsArray)
 {
 	SrbWidgetLaunchParams->ClearChildren();
 	if (!pParamsArray.Num())
@@ -832,13 +635,13 @@ void SWidgetUELauncher::UpdateLaunchParams(const TArray<FString>& pParamsArray)
 	}
 }
 
-void SWidgetUELauncher::UpdateSelectedProject(const FString& ProjectPath)
+void SConfPanel::UpdateSelectedProject(const FString& ProjectPath)
 {
 	OpenProjectFilePath = ProjectPath;
 }
 
 
-void SWidgetUELauncher::OnProjectFileTextBoxChanged(const FText& NewText)
+void SConfPanel::OnProjectFileTextBoxChanged(const FText& NewText)
 {
 	OpenProjectFilePath = NewText.ToString();
 }
@@ -848,7 +651,7 @@ TSharedRef<SWidget> MakeWidgetUELauncher()
 	extern TOptional<FSlateRenderTransform> GetTestRenderTransform();
 	extern FVector2D GetTestRenderTransformPivot();
 	return
-		SNew(SWidgetUELauncher)
+		SNew(SConfPanel)
 		.RenderTransform_Static(&GetTestRenderTransform)
 		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
 }

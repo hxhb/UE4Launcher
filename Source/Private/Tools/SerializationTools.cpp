@@ -6,10 +6,9 @@ FString SerializationTools::SerializationConf(const FLaunchConf& SaveConfig)
 	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> JsonWriter = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&JsonStr);
 	JsonWriter->WriteObjectStart();
 	JsonWriter->WriteValue(TEXT("Engine"), SaveConfig.Engine);
-	JsonWriter->WriteValue(TEXT("Platfrom"), SaveConfig.Platfrom);
 	JsonWriter->WriteValue(TEXT("Project"), SaveConfig.Project);
 	JsonWriter->WriteValue(TEXT("Tool"), SaveConfig.Tool);
-	JsonWriter->WriteValue(TEXT("bUseCmdEngine"), SaveConfig.bUseCmdEngine);
+	JsonWriter->WriteValue(TEXT("ToolPreArgs"), SaveConfig.ToolPreArgs);
 	JsonWriter->WriteArrayStart("Params");
 	for (const auto& ParamItem : SaveConfig.Params)
 	{
@@ -27,13 +26,12 @@ FLaunchConf SerializationTools::DeSerializationConf(const FString& jsonConf)
 	FLaunchConf loadConf;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(jsonConf);
 	TSharedPtr<FJsonObject> JsonObject;
-	bool BFlag = FJsonSerializer::Deserialize(JsonReader, JsonObject);
-	if (BFlag)
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
 		loadConf.Engine = JsonObject->GetStringField(TEXT("Engine"));
-		loadConf.Platfrom = JsonObject->GetStringField(TEXT("Platfrom"));
+		loadConf.Tool = JsonObject->GetStringField(TEXT("Tool"));
+		loadConf.ToolPreArgs = JsonObject->GetStringField(TEXT("ToolPreArgs"));
 		loadConf.Project = JsonObject->GetStringField(TEXT("Project"));
-		loadConf.bUseCmdEngine = JsonObject->GetBoolField(TEXT("bUseCmdEngine"));
 		TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("Params");
 		for (const auto& DataItem : LaunchParamsData)
 		{

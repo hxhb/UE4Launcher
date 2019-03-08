@@ -12,7 +12,6 @@ void SCombBoxWarper::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
 		.AutoWidth()
@@ -32,6 +31,7 @@ void SCombBoxWarper::Construct(const FArguments& InArgs)
 void SCombBoxWarper::HandleSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
 {
 	CurrentSelectedItem = NewSelection;
+	OnSelectorItemChanged.ExecuteIfBound(GetCurretSelectedItem());
 }
 
 TSharedRef<SWidget> SCombBoxWarper::HandleGenerateWidget(TSharedPtr<FString> InItem)
@@ -45,14 +45,13 @@ FText SCombBoxWarper::HandleSelectionChangeText() const
 	return CurrentSelectedItem.IsValid() ? FText::FromString(*CurrentSelectedItem) : FText::FromString(TEXT("AAAAAAAAAAAAAAAAAAAA"));
 }
 
-void SCombBoxWarper::UpdateSelector(const TArray<FString>& SelectorList,const FString& SelectedItem)
+void SCombBoxWarper::UpdateSelector(const TArray<FString>& pSelectorList,const FString& pSelectedItem)
 {
-	SelectorTextList.Empty();
 	int32 local_DefaultSelectedItemIndex = 0;
-	for (const auto& SelectorItem : SelectorList)
+	for (const auto& SelectorItem : pSelectorList)
 	{
 		int Index=SelectorTextList.Add((MakeShareable(new FString(SelectorItem))));
-		if (!SelectedItem.IsEmpty() && SelectedItem.Equals(SelectedItem))
+		if (!pSelectedItem.IsEmpty() && SelectorItem.Equals(pSelectedItem))
 		{
 			local_DefaultSelectedItemIndex = Index;
 		}
@@ -62,12 +61,18 @@ void SCombBoxWarper::UpdateSelector(const TArray<FString>& SelectorList,const FS
 		CurrentSelectedItem = SelectorTextList[local_DefaultSelectedItemIndex];
 		SelectorWidget->RefreshOptions();
 		SelectorWidget->SetSelectedItem(CurrentSelectedItem);
+		
 	}
 
 }
 FString SCombBoxWarper::GetCurretSelectedItem()const
 {
 	return *CurrentSelectedItem;
+}
+
+void SCombBoxWarper::ClearAllSelectItem()
+{
+	SelectorTextList.Empty();
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
