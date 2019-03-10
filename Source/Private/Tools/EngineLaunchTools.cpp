@@ -24,11 +24,13 @@ FString EngineLaunchTools::CombineLaunchParams(const FLaunchConf& conf)
 	if (!conf.ToolPreArgs.IsEmpty())
 		resault.Append(conf.ToolPreArgs);
 	resault.Append(TEXT("\"")).Append(conf.Project).Append(TEXT("\" "));
-
 	for(const auto& ParamItem:conf.Params)
 	{
-		resault.Append(" ");
-		resault.Append(ParamItem);
+		if (!ParamItem.IsEmpty())
+		{
+			resault.Append(" ");
+			resault.Append(ParamItem);
+		}
 	}
 	return resault;
 }
@@ -56,6 +58,15 @@ TArray<FString> EngineLaunchTools::GetAllRegistedEngineList(const TMap<FString, 
 	return resault;
 }
 
+FString EngineLaunchTools::GetEnginePathFromIdentifier(const FString& EngineIdentifier)
+{
+	TMap<FString, FString> EngineMaps;
+	EngineMaps = EngineLaunchTools::GetAllRegistedEngineMap();
+	if (EngineMaps.Contains(EngineIdentifier))
+		return *EngineMaps.Find(EngineIdentifier);
+	else
+		return TEXT("");
+}
 
 void EngineLaunchTools::RegisterValueWriter(HKEY hKey, DWORD dwType,const FString& lpSubKey, const FString& lpValueName,const FString& lpData,bool SetAsDefaultValue)
 {
@@ -92,7 +103,11 @@ void EngineLaunchTools::UE4LauncherRegisterWriter()
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\edit\\command"),TEXT(""),ExecutableProgramPath + TEXT(" -e \"%1\"") ,true},
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT(""),TEXT("Launch Config") ,true},
 		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run"),TEXT("Icon"),ExecutableProgramPath},
-		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run\\command"),TEXT(""),ExecutableProgramPath+TEXT(" -c \"%1\""), true}
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("UE4Launcher.ProjectFile\\shell\\run\\command"),TEXT(""),ExecutableProgramPath + TEXT(" -c \"%1\""), true},
+		// Unreal.ProjectFile
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("Unreal.ProjectFile\\shell\\genconf"),TEXT(""),TEXT("Genreate UE4Launcher Config") ,true},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("Unreal.ProjectFile\\shell\\genconf"),TEXT("Icon"),ExecutableProgramPath},
+		FValueRegister{ HKEY_CLASSES_ROOT ,REG_SZ,TEXT("Unreal.ProjectFile\\shell\\genconf\\command"),TEXT(""),ExecutableProgramPath + TEXT(" -g \"%1\""), true}
 	};
 	for (const auto& RegisterItem : WaitWrite)
 	{
@@ -162,4 +177,33 @@ FString EngineLaunchTools::GetToolBinPath(const FLaunchConf& conf)
 	resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
 #undef PLATFROM_EXECUTABLE_FORMAT
 	return resault;
+}
+
+
+FString EngineLaunchTools::GetUEProjectEnginePath(const FString& upeojctFile)
+{
+	FString EngineVersionId;
+	FDesktopPlatformModule::Get()->GetEngineIdentifierForProject(upeojctFile, EngineVersionId);
+
+	return EngineLaunchTools::GetEnginePathFromIdentifier(EngineVersionId);
+}
+
+FString EngineLaunchTools::GetProjectDir(const FString& Project)
+{
+	FString ProjectPath;
+	TArray<FString> OutArray;
+	Project.ParseIntoArray(OutArray, TEXT("\\"));
+	if (OutArray.Num() == 1 && OutArray[0] == Project)
+	{
+		Project.ParseIntoArray(OutArray, TEXT("/"));
+	}
+	for (const auto& item : OutArray)
+	{
+		if (FPaths::DirectoryExists(ProjectPath + item))
+		{
+			ProjectPath.Append(item);
+			ProjectPath.Append(TEXT("\\"));
+		}
+	}
+	return ProjectPath;
 }

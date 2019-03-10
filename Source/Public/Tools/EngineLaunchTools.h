@@ -23,7 +23,7 @@ public:
 	static TArray<FString> GetAllRegistedEngineList(const TMap<FString, FString>& pEngineMap);
 	static void RegisterValueWriter(HKEY hKey, DWORD dwType, const FString& lpSubKey, const FString& lpValueName, const FString& lpData, bool SetAsDefaultValue);
 	static void UE4LauncherRegisterWriter();
-
+	static FString GetEnginePathFromIdentifier(const FString& EngineIdentifier);
 	// Tool Info
 	static TArray<FToolInfo> GetToolsInfoList();
 	static TArray<FString> GetToolList();
@@ -32,5 +32,8 @@ public:
 
 	static FString GetCurrentProgramFullName();
 	static FString GetCurrentWorkDirectory();
+
+	static FString GetUEProjectEnginePath(const FString& upeojctFile);
+	static FString GetProjectDir(const FString& Project);
 	
 };

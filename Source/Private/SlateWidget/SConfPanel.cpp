@@ -391,21 +391,9 @@ FReply SConfPanel::BtnClickEventOpenProjectFile()
 FReply SConfPanel::BtnClickEventOpenProjectFileDir()
 {
 	FString FinalCommdParas = TEXT("/e,/root,");
-	TArray<FString> OutArray;
-	GetSelectedProjectPath().ParseIntoArray(OutArray, TEXT("/"));
 
-	FString FinalValidPath;
-	{
-		for (const auto& item : OutArray)
-		{
-			if (FPaths::DirectoryExists(FinalValidPath + item))
-			{
-				FinalValidPath.Append(item);
-				FinalValidPath.Append(TEXT("\\"));
-			}
-		}
-	}
-	FinalCommdParas.Append(FinalValidPath);
+	FString IsValidDir=EngineLaunchTools::GetProjectDir(GetSelectedProjectPath());
+	FinalCommdParas.Append(IsValidDir);
 
 	FPlatformProcess::CreateProc(TEXT("explorer "), *FinalCommdParas, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
