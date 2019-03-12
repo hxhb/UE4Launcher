@@ -149,8 +149,6 @@ namespace CommandHandler{
 		Conf.Engine = EnginePath;
 		Conf.Tool = TEXT("UE4Editor");
 		Conf.Project = Param;
-		while (std::isspace(Conf.Project[Conf.Project.Len() - 1]))
-			Conf.Project.RemoveAt(Conf.Project.Len() - 1);
 
 		FString ProjectDir = EngineLaunchTools::GetProjectDir(Param);
 		for (uint32 Index = 0; Index < 100; ++Index)

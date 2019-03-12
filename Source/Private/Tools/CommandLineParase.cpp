@@ -17,6 +17,9 @@ TMap<FString,FString> CommandLineParase::GetCommandLineParamsMap(const FString& 
 			{
 				ItemToken.Append(ParamsTokens[index]).Append(TEXT(" "));
 			}
+			// remove all end point space
+			while (std::isspace(ItemToken[ItemToken.Len() - 1]))
+				ItemToken.RemoveAt(ItemToken.Len() - 1);
 			resault.Add(SwitchItem,ItemToken);
 		}
 	}
