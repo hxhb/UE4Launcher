@@ -18,8 +18,6 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 			SAssignNew(EditableTextBox,SEditableTextBox)
 			.Text(InArgs._EditableText)
 			.HintText(InArgs._EditableHintText)
-
-
 		]
 		+ SHorizontalBox::Slot()
 		.AutoWidth()

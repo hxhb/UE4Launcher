@@ -409,6 +409,7 @@ FReply SConfPanel::BtnClickEventOpenVS()
 
 FReply SConfPanel::BtnClickEventClearConfig()
 {
+	SetOpenedFile();
 	FLaunchConf DefaultConfig;
 	UpdateAll(DefaultConfig);
 	return FReply::Handled();
@@ -437,6 +438,7 @@ FReply SConfPanel::BtnClickEventLoadConfig()
 		{
 			SelectedLoadConfigPath = FPaths::ConvertRelativePathToFull(OpenFilenames[0]);
 			{
+				SetOpenedFile(SelectedLoadConfigPath);
 				FString jsonValue;
 				bool flag = FFileHelper::LoadFileToString(jsonValue, *SelectedLoadConfigPath);
 				if (flag)
@@ -452,37 +454,50 @@ FReply SConfPanel::BtnClickEventLoadConfig()
 FReply SConfPanel::BtnClickEventSaveConfig()
 {
 	FString SelectedSaveConfigPath;
-	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 
-	if (DesktopPlatform)
+	if (OpenedConfFile.IsEmpty())
 	{
-		TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindWidgetWindow(SharedThis(this));
+		IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 
-		TArray<FString> SaveFilenames;
-		const bool bOpened = DesktopPlatform->SaveFileDialog(
-			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
-			LOCTEXT("SvedUE4LaunchConfig", "Save .uejson").ToString(),
-			FString(TEXT("")),
-			TEXT(""),
-			TEXT("UE4Launcher json (*.uejson)|*.uejson"),
-			EFileDialogFlags::None,
-			SaveFilenames
-		);
-
-		if (SaveFilenames.Num() > 0)
+		if (DesktopPlatform)
 		{
-			SelectedSaveConfigPath = FPaths::ConvertRelativePathToFull(SaveFilenames[0]);
+			TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindWidgetWindow(SharedThis(this));
 
+			TArray<FString> SaveFilenames;
+			const bool bOpened = DesktopPlatform->SaveFileDialog(
+				(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
+				LOCTEXT("SvedUE4LaunchConfig", "Save .uejson").ToString(),
+				FString(TEXT("")),
+				TEXT(""),
+				TEXT("UE4Launcher json (*.uejson)|*.uejson"),
+				EFileDialogFlags::None,
+				SaveFilenames
+			);
+
+			if (SaveFilenames.Num() > 0)
 			{
-				// serialization config
-				FFileHelper::SaveStringToFile(SerializationTools::SerializationConf(GetLaunchConf()), *SelectedSaveConfigPath);
+				SelectedSaveConfigPath = FPaths::ConvertRelativePathToFull(SaveFilenames[0]);
 			}
 		}
 	}
+	else
+	{
+		SelectedSaveConfigPath = GetOpenedFile();
+	}
+	// serialization config
+	FFileHelper::SaveStringToFile(SerializationTools::SerializationConf(GetLaunchConf()), *SelectedSaveConfigPath);
+
 	return FReply::Handled();
 }
 
-
+void SConfPanel::SetOpenedFile(const FString& Path)
+{
+	OpenedConfFile = FPaths::FileExists(Path)?Path:TEXT("");
+}
+FString SConfPanel::GetOpenedFile()const
+{
+	return OpenedConfFile;
+}
 void SConfPanel::UpdateToolSelector(const TArray<FString>& ToolsList, const FString& DefaultTool)
 {
 	CmbToolSelector->ClearAllSelectItem();

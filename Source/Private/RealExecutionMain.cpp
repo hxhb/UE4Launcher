@@ -28,7 +28,7 @@ namespace CommandHandler{
 	static bool HasWindow=false;
 };
 
-TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf);
+TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile=TEXT(""));
 
 int RealExecutionMain(const TCHAR* pCmdLine)
 {
@@ -92,7 +92,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	return 0;
 }
 
-TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf)
+TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf,const FString& ConfFile)
 {
 	TSharedPtr < SConfPanel > LauncherPanel;
 	TSharedPtr<SWindow> ConfWindow = SNew(SWindow)
@@ -111,10 +111,12 @@ TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf)
 		];
 	// show the window
 	FSlateApplication::Get().AddWindow(ConfWindow.ToSharedRef());
+	LauncherPanel->SetOpenedFile(ConfFile);
 	// use config
 	LauncherPanel->UpdateAll(Conf);
 
 	CommandHandler::HasWindow = true;
+
 	return ConfWindow;
 }
 namespace CommandHandler{
@@ -128,7 +130,7 @@ namespace CommandHandler{
 		{
 			Conf = SerializationTools::DeSerializationConf(jsonValue);
 		}
-		CreateConfWindow(Conf);
+		CreateConfWindow(Conf,jsonFile);
 	}
 	void HandleCParamLogic(const FString& Param)
 	{

@@ -69,6 +69,10 @@ public:
 	// open Developer website
 	void HyLinkClickEventOpenDeveloperWebsite();
 
+
+	//
+	void SetOpenedFile(const FString& Path=TEXT(""));
+	FString GetOpenedFile()const;
 public:
 	// state changed event
 	void OnProjectFileTextBoxChanged(const FText& NewText);
@@ -117,6 +121,7 @@ private:
 private:
 	// general data
 	TMap<FString, FString> RegisterEngineMap;
-	
+
+	FString OpenedConfFile;
 };
 
