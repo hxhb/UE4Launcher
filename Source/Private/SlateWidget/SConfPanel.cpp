@@ -61,6 +61,7 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SConfPanel::Construct(const FArguments& InArgs)
 {
+	OnOpenedFileEvent = InArgs._OnOpenedFileEvent;
 	ChildSlot
 	[
 			SNew(SBorder)
@@ -493,6 +494,11 @@ FReply SConfPanel::BtnClickEventSaveConfig()
 void SConfPanel::SetOpenedFile(const FString& Path)
 {
 	OpenedConfFile = FPaths::FileExists(Path)?Path:TEXT("");
+	OnOpenedFileEvent.ExecuteIfBound(OpenedConfFile);
+	if (CallBackOpenedFileEvent)
+	{
+		CallBackOpenedFileEvent(OpenedConfFile);
+	}
 }
 FString SConfPanel::GetOpenedFile()const
 {

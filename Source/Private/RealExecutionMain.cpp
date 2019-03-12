@@ -28,6 +28,13 @@ namespace CommandHandler{
 	static bool HasWindow=false;
 };
 
+
+namespace WindowManager {
+	void OnOpenFileChangeWindowTitle(const FString& File);
+
+	static TArray<TSharedPtr<SWindow>> WindowsList;
+};
+
 TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile=TEXT(""));
 
 int RealExecutionMain(const TCHAR* pCmdLine)
@@ -108,17 +115,36 @@ TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf,const FString& Conf
 		.IsTopmostWindow(false)
 		[
 			SAssignNew(LauncherPanel, SConfPanel)
+			//.OnOpenedFileEvent(&WindowManager::OnOpenFileChangeWindowTitle)
 		];
 	// show the window
 	FSlateApplication::Get().AddWindow(ConfWindow.ToSharedRef());
 	LauncherPanel->SetOpenedFile(ConfFile);
 	// use config
 	LauncherPanel->UpdateAll(Conf);
-
+	LauncherPanel->CallBackOpenedFileEvent = &WindowManager::OnOpenFileChangeWindowTitle;
 	CommandHandler::HasWindow = true;
+
+	WindowManager::WindowsList.Add(ConfWindow);
 
 	return ConfWindow;
 }
+
+namespace WindowManager {
+	void OnOpenFileChangeWindowTitle(const FString& File)
+	{
+		if (!File.IsEmpty())
+		{
+			TArray<FString> OutArray;
+			File.ParseIntoArray(OutArray, TEXT("/"));
+			WindowManager::WindowsList[0]->SetTitle(FText::FromString(OutArray.Last() + TEXT(" | UE4 Launcher")));
+		}
+		else {
+			WindowManager::WindowsList[0]->SetTitle(FText::FromString(TEXT("UE4 Launcher")));
+		}
+	}
+};
+
 namespace CommandHandler{
 	void HandleEParamLogic(const FString& Param)
 	{

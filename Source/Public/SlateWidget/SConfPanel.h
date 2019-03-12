@@ -11,11 +11,17 @@ class SConfPanel;
 /** @return a new Drag and Drop test widget */
 TSharedRef<SWidget> MakeWidgetUELauncher();
 
+DECLARE_DELEGATE_OneParam(FOnOpendFile, const FString&)
+
 class SConfPanel :public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SConfPanel) { }
+	SLATE_BEGIN_ARGS(SConfPanel)
+		:_OnOpenedFileEvent()
+	{ }
+
+	SLATE_EVENT(FOnOpendFile, OnOpenedFileEvent)
 	SLATE_END_ARGS()
 
 public:
@@ -26,7 +32,11 @@ public:
 	 * @param InArgs - Construction arguments.
 	 */
 	void Construct(const FArguments& InArgs);
-	
+
+	void(*CallBackOpenedFileEvent)(const FString&);
+protected:
+	// Slate Event
+	FOnOpendFile OnOpenedFileEvent;
 
 public:
 	// Widget Show Text
