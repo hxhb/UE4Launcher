@@ -33,8 +33,6 @@ public:
 	 */
 	void Construct(const FArguments& InArgs);
 
-	void(*CallBackOpenedFileEvent)(const FString&);
-protected:
 	// Slate Event
 	FOnOpendFile OnOpenedFileEvent;
 

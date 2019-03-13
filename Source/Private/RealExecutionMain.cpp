@@ -29,13 +29,16 @@ namespace CommandHandler{
 };
 
 
-namespace WindowManager {
+namespace WindowManager
+{
+	TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile = TEXT(""));
+
 	void OnOpenFileChangeWindowTitle(const FString& File);
 
 	static TArray<TSharedPtr<SWindow>> WindowsList;
 };
 
-TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile=TEXT(""));
+
 
 int RealExecutionMain(const TCHAR* pCmdLine)
 {
@@ -78,7 +81,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	}
 
 	if (!AllParamsKeys.Num())
-		CreateConfWindow(FLaunchConf{});
+		WindowManager::CreateConfWindow(FLaunchConf{});
 
 	if (CommandHandler::HasWindow)
 	{
@@ -99,53 +102,68 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	return 0;
 }
 
-TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf,const FString& ConfFile)
+
+
+namespace WindowManager
 {
-	TSharedPtr < SConfPanel > LauncherPanel;
-	TSharedPtr<SWindow> ConfWindow = SNew(SWindow)
-		.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
-		.ScreenPosition(FVector2D(520, 550))
-		.ClientSize(FVector2D(520, 550))
-		.SupportsMaximize(false)
-		.AutoCenter(EAutoCenter::PrimaryWorkArea)
-		.MaxHeight(800)
-		.MaxWidth(650)
-		.MinHeight(580)
-		.MinWidth(520)
-		.IsTopmostWindow(false)
-		[
-			SAssignNew(LauncherPanel, SConfPanel)
-			//.OnOpenedFileEvent(&WindowManager::OnOpenFileChangeWindowTitle)
-		];
-	// show the window
-	FSlateApplication::Get().AddWindow(ConfWindow.ToSharedRef());
-	LauncherPanel->SetOpenedFile(ConfFile);
-	// use config
-	LauncherPanel->UpdateAll(Conf);
-	LauncherPanel->CallBackOpenedFileEvent = &WindowManager::OnOpenFileChangeWindowTitle;
-	CommandHandler::HasWindow = true;
+	TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile)
+	{
+		TSharedPtr < SConfPanel > LauncherPanel;
+		TSharedPtr<SWindow> ConfWindow = SNew(SWindow)
+			.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
+			.ScreenPosition(FVector2D(520, 550))
+			.ClientSize(FVector2D(520, 550))
+			.SupportsMaximize(false)
+			.AutoCenter(EAutoCenter::PrimaryWorkArea)
+			.MaxHeight(800)
+			.MaxWidth(650)
+			.MinHeight(580)
+			.MinWidth(520)
+			.IsTopmostWindow(false)
+			[
+				SAssignNew(LauncherPanel, SConfPanel)
+				//.OnOpenedFileEvent.BindStatic(&WindowManager::OnOpenFileChangeWindowTitle)
+			];
+		WindowManager::WindowsList.Add(ConfWindow);
+		// show the window
+		FSlateApplication::Get().AddWindow(ConfWindow.ToSharedRef());
 
-	WindowManager::WindowsList.Add(ConfWindow);
+		// Bind Opened file Event
+		LauncherPanel->OnOpenedFileEvent.BindStatic(&WindowManager::OnOpenFileChangeWindowTitle);
+		// Set Current Opened Conf File
+		LauncherPanel->SetOpenedFile(ConfFile);
+		// use config
+		LauncherPanel->UpdateAll(Conf);
 
-	return ConfWindow;
-}
+		CommandHandler::HasWindow = true;
 
-namespace WindowManager {
+		return ConfWindow;
+	}
+
 	void OnOpenFileChangeWindowTitle(const FString& File)
 	{
-		if (!File.IsEmpty())
+		if (!File.IsEmpty() && WindowManager::WindowsList.Num())
 		{
 			TArray<FString> OutArray;
-			File.ParseIntoArray(OutArray, TEXT("/"));
+			{
+				File.ParseIntoArray(OutArray, TEXT("/"));
+				if (OutArray.Num() == 1 && OutArray.Last() == File)
+				{
+					OutArray.Empty();
+					File.ParseIntoArray(OutArray, TEXT("\\"));
+				}
+			}
 			WindowManager::WindowsList[0]->SetTitle(FText::FromString(OutArray.Last() + TEXT(" | UE4 Launcher")));
 		}
-		else {
+		else
+		{
 			WindowManager::WindowsList[0]->SetTitle(FText::FromString(TEXT("UE4 Launcher")));
 		}
 	}
 };
 
-namespace CommandHandler{
+namespace CommandHandler
+{
 	void HandleEParamLogic(const FString& Param)
 	{
 		FLaunchConf Conf;
@@ -156,7 +174,7 @@ namespace CommandHandler{
 		{
 			Conf = SerializationTools::DeSerializationConf(jsonValue);
 		}
-		CreateConfWindow(Conf,jsonFile);
+		WindowManager::CreateConfWindow(Conf,jsonFile);
 	}
 	void HandleCParamLogic(const FString& Param)
 	{

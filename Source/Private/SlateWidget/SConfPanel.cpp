@@ -495,11 +495,8 @@ void SConfPanel::SetOpenedFile(const FString& Path)
 {
 	OpenedConfFile = FPaths::FileExists(Path)?Path:TEXT("");
 	OnOpenedFileEvent.ExecuteIfBound(OpenedConfFile);
-	if (CallBackOpenedFileEvent)
-	{
-		CallBackOpenedFileEvent(OpenedConfFile);
-	}
 }
+
 FString SConfPanel::GetOpenedFile()const
 {
 	return OpenedConfFile;
