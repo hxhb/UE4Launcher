@@ -144,16 +144,8 @@ namespace WindowManager
 	{
 		if (!File.IsEmpty() && WindowManager::WindowsList.Num())
 		{
-			TArray<FString> OutArray;
-			{
-				File.ParseIntoArray(OutArray, TEXT("/"));
-				if (OutArray.Num() == 1 && OutArray.Last() == File)
-				{
-					OutArray.Empty();
-					File.ParseIntoArray(OutArray, TEXT("\\"));
-				}
-			}
-			WindowManager::WindowsList[0]->SetTitle(FText::FromString(OutArray.Last() + TEXT(" | UE4 Launcher")));
+			FString ConfFileName = EngineLaunchTools::GetFileNameByFullDir(File);
+			WindowManager::WindowsList[0]->SetTitle(FText::FromString(ConfFileName + TEXT(" | UE4 Launcher")));
 		}
 		else
 		{
@@ -197,12 +189,14 @@ namespace CommandHandler
 		Conf.Project = Param;
 
 		FString ProjectDir = EngineLaunchTools::GetProjectDir(Param);
+		FString ConfFileName = EngineLaunchTools::GetFileNameByFullDir(Param);
+
 		for (uint32 Index = 0; Index < 100; ++Index)
 		{
-			FString SaveFile = FPaths::Combine(ProjectDir, TEXT("LaunchConf_")+FString::Printf(TEXT("%d"), Index) + TEXT(".uejson"));
+			FString IndexName = Index > 0 ? FString::Printf(TEXT("_%d"), Index) : TEXT("");
+			FString SaveFile = FPaths::Combine(ProjectDir, TEXT("LaunchConf_")+ ConfFileName + IndexName + TEXT(".uejson"));
 			if (!FPaths::FileExists(SaveFile))
-			{
-				
+			{	
 				FFileHelper::SaveStringToFile(SerializationTools::SerializationConf(Conf), *SaveFile);
 				break;
 			}

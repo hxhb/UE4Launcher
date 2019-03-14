@@ -35,5 +35,6 @@ public:
 
 	static FString GetUEProjectEnginePath(const FString& upeojctFile);
 	static FString GetProjectDir(const FString& Project);
+	static FString GetFileNameByFullDir(const FString& FullDir);
 	
 };

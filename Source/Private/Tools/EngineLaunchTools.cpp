@@ -207,3 +207,23 @@ FString EngineLaunchTools::GetProjectDir(const FString& Project)
 	}
 	return ProjectPath;
 }
+
+
+FString EngineLaunchTools::GetFileNameByFullDir(const FString& FullDir)
+{
+	FString resault;
+	TArray<FString> OutArray;
+	{
+		FullDir.ParseIntoArray(OutArray, TEXT("/"));
+		if (OutArray.Num() == 1 && OutArray.Last() == FullDir)
+		{
+			OutArray.Empty();
+			FullDir.ParseIntoArray(OutArray, TEXT("\\"));
+		}
+		resault = OutArray.Last();
+		OutArray.Empty();
+		resault.ParseIntoArray(OutArray, TEXT("."));
+		resault = OutArray[0];
+	}
+	return resault;
+}
