@@ -8,6 +8,7 @@
 #include "SWebBrowser.h"
 #include "IWebBrowserWindow.h"
 #include "IWebBrowserPopupFeatures.h"
+#include <iostream>
 
 // project files
 #include "SlateWidget/SConfPanel.h"
@@ -21,10 +22,18 @@
 
 IMPLEMENT_APPLICATION(UE4Launcher, "UE4Launcher");
 namespace CommandHandler{
-	void HandleEParamLogic(const FString& Param);
-	void HandleCParamLogic(const FString& Param);
-	void HandleGParamLogic(const FString& Param);
+	// Edit Mode
+	void CreateConfWindowByLaunchParams(const FString& Param);
+	// Launch Config don't create Config Panel
+	void LaunchConfInstanceByCmdLine(const FString& Param);
+	// from .uproject create .uejson
+	void GenerateLaunchConfFileByUproject(const FString& Param);
 
+
+	void HandleMainWindowClosed(const TSharedRef<SWindow>& pMainWindow);
+
+	bool CmdKeyHasMatched(const TArray<FString>& pTokens,const TArray<FString>& pKeys);
+	static TSharedPtr<SWindow> MainWindow;
 	static bool HasWindow=false;
 };
 
@@ -60,28 +69,35 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 
 
 	TMap<FString, void(*)(const FString&)> ParamsHandlerMaps;
-	ParamsHandlerMaps.Add(TEXT("e"), &CommandHandler::HandleEParamLogic);
-	ParamsHandlerMaps.Add(TEXT("c"), &CommandHandler::HandleCParamLogic);
-	ParamsHandlerMaps.Add(TEXT("g"), &CommandHandler::HandleGParamLogic);
+	TArray<FString> AllParamsHandlerKey;
+	ParamsHandlerMaps.Add(TEXT("e"), &CommandHandler::CreateConfWindowByLaunchParams);
+	ParamsHandlerMaps.Add(TEXT("c"), &CommandHandler::LaunchConfInstanceByCmdLine);
+	ParamsHandlerMaps.Add(TEXT("g"), &CommandHandler::GenerateLaunchConfFileByUproject);
+	ParamsHandlerMaps.GetKeys(AllParamsHandlerKey);
 
 	TMap<FString, FString> CommandArgsMaps = CommandLineParase::GetCommandLineParamsMap(FCommandLine::Get());
 	TArray<FString> AllParamsKeys;
 	CommandArgsMaps.GetKeys(AllParamsKeys);
 
-	for (const auto& ParamItem : AllParamsKeys)
+	if (CommandHandler::CmdKeyHasMatched(AllParamsHandlerKey, AllParamsKeys))
 	{
-		if (ParamsHandlerMaps.Contains(ParamItem))
+		for (const auto& ParamItem : AllParamsKeys)
 		{
-			void(*Handler)(const FString&) = *ParamsHandlerMaps.Find(ParamItem);
-			if (Handler)
+			if (ParamsHandlerMaps.Contains(ParamItem))
 			{
-				Handler(*CommandArgsMaps.Find(ParamItem));
+				void(*Handler)(const FString&) = *ParamsHandlerMaps.Find(ParamItem);
+				if (Handler)
+				{
+					Handler(*CommandArgsMaps.Find(ParamItem));
+					break;
+				}
 			}
 		}
 	}
-
-	if (!AllParamsKeys.Num())
-		WindowManager::CreateConfWindow(FLaunchConf{});
+	else
+	{
+		CommandHandler::CreateConfWindowByLaunchParams(TEXT(""));
+	}
 
 	if (CommandHandler::HasWindow)
 	{
@@ -135,8 +151,6 @@ namespace WindowManager
 		// use config
 		LauncherPanel->UpdateAll(Conf);
 
-		CommandHandler::HasWindow = true;
-
 		return ConfWindow;
 	}
 
@@ -156,7 +170,7 @@ namespace WindowManager
 
 namespace CommandHandler
 {
-	void HandleEParamLogic(const FString& Param)
+	void CreateConfWindowByLaunchParams(const FString& Param)
 	{
 		FLaunchConf Conf;
 		FString jsonFile = Param;
@@ -166,9 +180,17 @@ namespace CommandHandler
 		{
 			Conf = SerializationTools::DeSerializationConf(jsonValue);
 		}
-		WindowManager::CreateConfWindow(Conf,jsonFile);
+		// the config file is existed in disk?
+		if (!FPaths::FileExists(jsonFile))
+			jsonFile.Empty();
+		CommandHandler::MainWindow = WindowManager::CreateConfWindow(Conf,jsonFile);
+		if (CommandHandler::MainWindow.IsValid())
+		{
+			CommandHandler::HasWindow = true;
+			CommandHandler::MainWindow->SetOnWindowClosed(FOnWindowClosed::CreateStatic(&CommandHandler::HandleMainWindowClosed));
+		}
 	}
-	void HandleCParamLogic(const FString& Param)
+	void LaunchConfInstanceByCmdLine(const FString& Param)
 	{
 		FLaunchConf Conf;
 		FString jsonFile = Param;
@@ -180,7 +202,7 @@ namespace CommandHandler
 		}
 		EngineLaunchTools::EngineLauncher(Conf);
 	}
-	void HandleGParamLogic(const FString& Param)
+	void GenerateLaunchConfFileByUproject(const FString& Param)
 	{
 		FLaunchConf Conf;
 		FString EnginePath=EngineLaunchTools::GetUEProjectEnginePath(Param);
@@ -201,6 +223,25 @@ namespace CommandHandler
 				break;
 			}
 		}
+	}
+
+	void HandleMainWindowClosed(const TSharedRef<SWindow>& pMainWindow)
+	{
+		// close the window notify user save config.
+	}
+
+	bool CmdKeyHasMatched(const TArray<FString>& pTokens, const TArray<FString>& pKeys)
+	{
+		bool bIsMatched = false;
+		for (const auto& KeyIndex : pKeys)
+		{
+			if (pTokens.Find(KeyIndex)!=INDEX_NONE)
+			{
+				bIsMatched = true;
+			}
+		}
+
+		return bIsMatched;
 	}
 };
 #undef LOCTEXT_NAMESPACE
