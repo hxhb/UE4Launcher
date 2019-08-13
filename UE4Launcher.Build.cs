@@ -13,8 +13,8 @@ public class UE4Launcher : ModuleRules
             {
                 "Runtime/Launch/Public",
                 "Programs/UE4Launcher/Source/Public",
-				Path.Combine(EngineDirectory,"Source/Runtime/Core/Public/Containers"),
-                Path.Combine(EngineDirectory,"Source/Runtime/Core/Public/Misc")
+				"Runtime/Core/Public/Containers",
+                "Runtime/Core/Public/Misc"
             }); 
         PrivateIncludePaths.AddRange(
             new string[]
