@@ -3,8 +3,8 @@
 #ifndef APSTUDIO_INVOKED
 
 #include <windows.h>
-#include "../../../../Runtime/Launch/Resources/Windows/resource.h"
-#include "../../../../Runtime/Launch/Resources/Version.h"
+#include "../../../Runtime/Launch/Resources/Windows/resource.h"
+#include "../../../Runtime/Launch/Resources/Version.h"
 
 #define IDICON_UE4Launcher 2000
 #define IDICON_UE4Config 2001
@@ -57,18 +57,18 @@ END
 
 // Debug manifest
 #if _WIN64
-1						RT_MANIFEST				"../../../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win64.manifest"
+1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win64.manifest"
 #else
-1						RT_MANIFEST				"../../../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win32.manifest"
+1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win32.manifest"
 #endif
 
 #else
 
 // Release manifest
 #if _WIN64
-1						RT_MANIFEST				"../../../../../Runtime/Launch/Resources/Windows/PCLaunch-Win64.manifest"
+1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/PCLaunch-Win64.manifest"
 #else
-1						RT_MANIFEST				"../../../../../Runtime/Launch/Resources/Windows/PCLaunch-Win32.manifest"
+1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/PCLaunch-Win32.manifest"
 #endif
 
 #endif

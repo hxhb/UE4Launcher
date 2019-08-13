@@ -142,8 +142,11 @@ FString EngineLaunchTools::GetCurrentWorkDirectory()
 TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
 {
 	return TArray<FToolInfo>{
-		{TEXT("UE4Editor"), TEXT(""), TEXT("Engine/Binaries/Win64")},
-		{ TEXT("UE4Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") }
+		{ TEXT("UE4Editor"), TEXT(""), TEXT("Engine/Binaries/Win64") },
+		{ TEXT("UE4Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") },
+		{ TEXT("UnrealFrontend"),TEXT(""),TEXT("Engine/Binaries/Win64") },
+		{ TEXT("NetworkProfiler"),TEXT(""),TEXT("Engine/Binaries/DotNET") },
+		{ TEXT("UnrealPak"),TEXT(""),TEXT("Engine/Binaries/Win64") }
 	};
 }
 

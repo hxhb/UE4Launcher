@@ -2,6 +2,7 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using System.IO;
 
 public class UE4Launcher : ModuleRules
 {
@@ -12,6 +13,8 @@ public class UE4Launcher : ModuleRules
             {
                 "Runtime/Launch/Public",
                 "Programs/UE4Launcher/Source/Public",
+				Path.Combine(EngineDirectory,"Source/Runtime/Core/Public/Containers"),
+                Path.Combine(EngineDirectory,"Source/Runtime/Core/Public/Misc")
             }); 
         PrivateIncludePaths.AddRange(
             new string[]

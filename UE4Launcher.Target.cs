@@ -11,14 +11,7 @@ public class UE4LauncherTarget : TargetRules
 		LinkType = TargetLinkType.Monolithic;
 		LaunchModuleName = "UE4Launcher";
         ExtraModuleNames.Add("EditorStyle");
-    }
 
-    public override void SetupGlobalEnvironment(
-        TargetInfo Target,
-        ref LinkEnvironmentConfiguration OutLinkEnvironmentConfiguration,
-        ref CPPEnvironmentConfiguration OutCPPEnvironmentConfiguration
-        )
-    {
         // Lean and mean
         bCompileLeanAndMeanUE = true;
 
@@ -33,5 +26,14 @@ public class UE4LauncherTarget : TargetRules
         // If ture the program entrance is WinMain,otherwise entrance is main
         bIsBuildingConsoleApplication = false;
     }
+
+    // public override void SetupGlobalEnvironment(
+    //     TargetInfo Target,
+    //     ref LinkEnvironmentConfiguration OutLinkEnvironmentConfiguration,
+    //     ref CPPEnvironmentConfiguration OutCPPEnvironmentConfiguration
+    //     )
+    // {
+
+    // }
 }
 
