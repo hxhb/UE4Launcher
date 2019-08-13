@@ -352,7 +352,11 @@ FReply SConfPanel::BtnClickEventClearAllLaunchParamsButton()
 
 FReply SConfPanel::BtnClickEventLaunchEngine()
 {
-	EngineLaunchTools::EngineLauncher(GetLaunchConf());
+	FLaunchConf CurrentConf = GetLaunchConf();
+	CurrentConf.Project = TEXT("");
+	CurrentConf.Params.Empty();
+
+	EngineLaunchTools::EngineLauncher(CurrentConf);
 	return FReply::Handled();
 }
 
