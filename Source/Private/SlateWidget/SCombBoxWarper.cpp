@@ -48,6 +48,7 @@ FText SCombBoxWarper::HandleSelectionChangeText() const
 void SCombBoxWarper::UpdateSelector(const TArray<FString>& pSelectorList,const FString& pSelectedItem)
 {
 	int32 local_DefaultSelectedItemIndex = 0;
+	SelectorTextList.Empty();
 	for (const auto& SelectorItem : pSelectorList)
 	{
 		int Index=SelectorTextList.Add((MakeShareable(new FString(SelectorItem))));
