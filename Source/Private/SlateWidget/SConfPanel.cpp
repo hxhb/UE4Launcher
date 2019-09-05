@@ -233,6 +233,16 @@ void SConfPanel::Construct(const FArguments& InArgs)
 											.VAlign(VAlign_Center)
 											.OnClicked(this, &SConfPanel::BtnClickEventOpenProjectFileDir)
 										]
+									+ SHorizontalBox::Slot()
+										//.FillWidth(0.3f)
+										.AutoWidth()
+										[
+											SAssignNew(BtnOpenProjectSln,SButton)
+											.Text(LOCTEXT("OpenProjestSln", "OpenSln"))
+										.HAlign(HAlign_Center)
+										.VAlign(VAlign_Center)
+										.OnClicked(this, &SConfPanel::BtnClickEventOpenProjectSln)
+										]
 								]
 
 						]
@@ -321,9 +331,8 @@ void SConfPanel::Construct(const FArguments& InArgs)
 
 	];
 	// initialize
-	TMap<FString, FString> EngineMap = EngineLaunchTools::GetAllRegistedEngineMap();
 	{
-		UpdateEngineSelector(EngineMap);
+		UpdateEngineSelector(EngineLaunchTools::GetAllRegistedEngineMap());
 		UpdateToolSelector(EngineLaunchTools::GetToolList());
 		UpdateSelectedProject();
 		UpdateLaunchParams();
@@ -387,7 +396,8 @@ FReply SConfPanel::BtnClickEventOpenProjectFile()
 
 		if (OpenFilenames.Num() > 0)
 		{
-			OpenProjectFilePath = FPaths::ConvertRelativePathToFull(OpenFilenames[0]);
+			FString local_OpenProjectFilePath = FPaths::ConvertRelativePathToFull(OpenFilenames[0]);
+			UpdateSelectedProject(local_OpenProjectFilePath);
 		}
 	}
 	return FReply::Handled();
@@ -404,9 +414,30 @@ FReply SConfPanel::BtnClickEventOpenProjectFileDir()
 	return FReply::Handled();
 }
 
+FReply SConfPanel::BtnClickEventOpenProjectSln()
+{
+	if (!GetSelectedProjectPath().IsEmpty() && GetSelectedProjectPath().EndsWith(TEXT("uproject")))
+	{
+		FString local_ProjectSln = GetSelectedProjectPath();
+		{
+			local_ProjectSln.RemoveFromEnd(TEXT("uproject"));
+			local_ProjectSln.Append(TEXT("sln\""));
+			local_ProjectSln.InsertAt(0, TEXT("\""));
+		}
+
+		FString FinalCmdParams = TEXT("/c start devenv.exe ") + local_ProjectSln;
+		FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
+	}
+	return FReply::Handled();
+}
+
 FReply SConfPanel::BtnClickEventOpenVS()
 {
 	FString ue4sln = GetSelectedEnginePath() + TEXT("//UE4.sln");
+	{
+		ue4sln.InsertAt(0, TEXT("\""));
+		ue4sln.Append(TEXT("\""));
+	}
 	FString FinalCmdParams = TEXT("/c start devenv.exe ") + ue4sln;
 	FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
@@ -513,7 +544,7 @@ void SConfPanel::UpdateToolSelector(const TArray<FString>& ToolsList, const FStr
 
 void SConfPanel::UpdateAll(const FLaunchConf& conf)
 {
-	UpdateEngineSelector(RegisterEngineMap,conf.Engine);
+	UpdateEngineSelector(EngineLaunchTools::GetAllRegistedEngineMap(),conf.Engine);
 	UpdateToolSelector(EngineLaunchTools::GetToolList(), conf.Tool);
 	UpdateSelectedProject(conf.Project);
 	UpdateLaunchParams(conf.Params);
@@ -615,7 +646,7 @@ void SConfPanel::HandleEngineSelectorChanged(const FString& NewEngine)
 
 void SConfPanel::UpdateEngineSelector(const TMap<FString, FString>& EngineMap, FString DefaultEngine)
 {
-	CmbEngineSelector->UpdateSelector(EngineLaunchTools::GetAllRegistedEngineList(EngineMap));
+	CmbEngineSelector->UpdateSelector(EngineLaunchTools::GetAllRegistedEngineList(EngineMap),DefaultEngine);
 }
 
 void SConfPanel::UpdateOpenVSButton(const FString& EnginePath)
@@ -647,13 +678,38 @@ void SConfPanel::UpdateLaunchParams(const TArray<FString>& pParamsArray)
 
 void SConfPanel::UpdateSelectedProject(const FString& ProjectPath)
 {
-	OpenProjectFilePath = ProjectPath;
+	OnProjectFileTextBoxChanged(FText::AsCultureInvariant(ProjectPath));
 }
 
 
 void SConfPanel::OnProjectFileTextBoxChanged(const FText& NewText)
 {
 	OpenProjectFilePath = NewText.ToString();
+	UpdateOpenProjectSlnButton(OpenProjectFilePath);
+}
+
+void SConfPanel::UpdateOpenProjectSlnButton(const FString& SelectedProjectPath)
+{
+	bool HasSln = false;
+	FString local_ProjectFullPath(SelectedProjectPath);
+
+	if (!local_ProjectFullPath.IsEmpty() && 
+		FPaths::FileExists(local_ProjectFullPath) &&
+		local_ProjectFullPath.EndsWith(TEXT("uproject"))
+		)
+	{
+		local_ProjectFullPath.RemoveFromEnd(TEXT("uproject"));
+		local_ProjectFullPath.Append(TEXT("sln"));
+		HasSln = FPaths::FileExists(local_ProjectFullPath);
+	}
+
+	if (HasSln)
+	{
+		BtnOpenProjectSln->SetVisibility(EVisibility::Visible);
+	}
+	else {
+		BtnOpenProjectSln->SetVisibility(EVisibility::Hidden);
+	}
 }
 
 TSharedRef<SWidget> MakeWidgetUELauncher()

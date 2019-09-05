@@ -69,7 +69,8 @@ public:
 	FReply BtnClickEventOpenProjectFile();
 	// open project directory
 	FReply BtnClickEventOpenProjectFileDir();
-
+	// open project sln
+	FReply BtnClickEventOpenProjectSln();
 	// read/write config
 	FReply BtnClickEventLoadConfig();
 	FReply BtnClickEventSaveConfig();
@@ -93,6 +94,8 @@ public:
 	void UpdateOpenVSButton(const FString& EnginePath);
 	
 	void UpdateSelectedProject(const FString& ProjectPath=TEXT(""));
+	// Update is show OpenVS Button
+	void UpdateOpenProjectSlnButton(const FString& SelectedProjectPath);
 
 	void UpdateLaunchParams(const TArray<FString>& pParamsArray = TArray<FString>{});
 
@@ -118,6 +121,7 @@ private:
 	// button
 	TSharedPtr<SButton> BtnLaunchEngine;
 	TSharedPtr<SButton> BtnOpenVS;
+	TSharedPtr<SButton> BtnOpenProjectSln;
 	TSharedPtr<SButton> BtnLaunchProject;
 
 	// Button Text
