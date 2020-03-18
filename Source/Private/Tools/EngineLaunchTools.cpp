@@ -156,7 +156,7 @@ TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
 	
 	FString LaunchToolsConfPath = FPaths::Combine(Path, TEXT("LaunchTools.json"));
 
-	printf("%s", TCHAR_TO_ANSI(*LaunchToolsConfPath));
+	// printf("%s", TCHAR_TO_ANSI(*LaunchToolsConfPath));
 	if (FPaths::FileExists(LaunchToolsConfPath))
 	{
 		FString ConfigContent;
