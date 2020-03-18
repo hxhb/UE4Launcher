@@ -1,5 +1,7 @@
 #include "Tools/EngineLaunchTools.h"
+#include "Tools/SerializationTools.h"
 #include <shellapi.h>
+#include "Misc/FileHelper.h"
 
 bool EngineLaunchTools::EngineLauncher(const FLaunchConf& conf)
 {
@@ -141,13 +143,44 @@ FString EngineLaunchTools::GetCurrentWorkDirectory()
 
 TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
 {
-	return TArray<FToolInfo>
+	TArray<FToolInfo> Result;
+	FString BinPATH = GetCurrentProgramFullName();
+	FPaths::MakeStandardFilename(BinPATH);
+
+	FString Path;
 	{
-		{ TEXT("UE4Editor"), TEXT(""), TEXT("Engine/Binaries/Win64") },
-		{ TEXT("UE4Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") },
-		{ TEXT("UnrealFrontend"),TEXT(""),TEXT("Engine/Binaries/Win64") },
-		{ TEXT("NetworkProfiler"),TEXT(""),TEXT("Engine/Binaries/DotNET") }
-	};
+		FString Filename;
+		FString Extern;
+		FPaths::Split(BinPATH, Path, Filename, Extern);
+	}
+	
+	FString LaunchToolsConfPath = FPaths::Combine(Path, TEXT("LaunchTools.json"));
+
+	printf("%s", TCHAR_TO_ANSI(*LaunchToolsConfPath));
+	if (FPaths::FileExists(LaunchToolsConfPath))
+	{
+		FString ConfigContent;
+		FFileHelper::LoadFileToString(ConfigContent, *LaunchToolsConfPath);
+
+		Result = SerializationTools::DeSerializeToolsByString(ConfigContent);
+	}
+	else
+	{
+		TArray<FToolInfo> DefaultTools{
+			{ TEXT("UE4Editor"), TEXT(""), TEXT("Engine/Binaries/Win64") },
+			{ TEXT("UE4Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") },
+			{ TEXT("UnrealFrontend"),TEXT(""),TEXT("Engine/Binaries/Win64") },
+			{ TEXT("NetworkProfiler"),TEXT(""),TEXT("Engine/Binaries/DotNET") }
+		};
+		FString DefaultToolsContent = SerializationTools::SerializeToolsAsString(DefaultTools);
+		FFileHelper::SaveStringToFile(DefaultToolsContent, *LaunchToolsConfPath);
+
+		for (const auto& Tool : DefaultTools)
+		{
+			Result.Add(Tool);
+		}
+	}
+	return Result;	
 }
 
 TArray<FString> EngineLaunchTools::GetToolList()
