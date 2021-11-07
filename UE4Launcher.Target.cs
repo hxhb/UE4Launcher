@@ -11,9 +11,9 @@ public class UE4LauncherTarget : TargetRules
 		LinkType = TargetLinkType.Monolithic;
 		LaunchModuleName = "UE4Launcher";
         ExtraModuleNames.Add("EditorStyle");
-
-        // Lean and mean
-        bCompileLeanAndMeanUE = true;
+		DefaultBuildSettings = BuildSettingsVersion.V1;
+		// Lean and mean
+		bCompileLeanAndMeanUE = true;
 
         // No editor or editor-only data is needed
         bBuildEditor = false;

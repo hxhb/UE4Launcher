@@ -9,7 +9,7 @@ class SEditableBoxWraper;
 class SConfPanel;
 
 /** @return a new Drag and Drop test widget */
-TSharedRef<SWidget> MakeWidgetUELauncher();
+// TSharedRef<SWidget> MakeWidgetUELauncher();
 
 DECLARE_DELEGATE_OneParam(FOnOpendFile, const FString&)
 

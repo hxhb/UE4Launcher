@@ -36,7 +36,8 @@ public class UE4Launcher : ModuleRules
                 "SlateReflector",
                 "StandaloneRenderer",
                 "WebBrowser",
-                "SourceCodeAccess"
+                "SourceCodeAccess",
+				"OpenGL"
             }
         );
         PrivateIncludePathModuleNames.AddRange(

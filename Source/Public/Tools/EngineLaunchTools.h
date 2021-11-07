@@ -2,7 +2,8 @@
 
 #include "Containers/Array.h"
 #include "Data/FLaunchConf.h"
-
+#include <winreg.h>
+#include "UnrealString.h"
 struct FToolInfo
 {
 	FToolInfo() = default;

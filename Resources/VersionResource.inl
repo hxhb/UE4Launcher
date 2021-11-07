@@ -52,26 +52,26 @@ END
 //
 // Application Manifest
 //
-
-#if _DEBUG
-
-// Debug manifest
-#if _WIN64
-1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win64.manifest"
-#else
-1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win32.manifest"
-#endif
-
-#else
-
-// Release manifest
-#if _WIN64
-1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/PCLaunch-Win64.manifest"
-#else
-1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/PCLaunch-Win32.manifest"
-#endif
-
-#endif
+//
+//#if _DEBUG
+//
+//// Debug manifest
+//#if _WIN64
+//1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win64.manifest"
+//#else
+//1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/Debug-PCLaunch-Win32.manifest"
+//#endif
+//
+//#else
+//
+//// Release manifest
+//#if _WIN64
+//1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/PCLaunch-Win64.manifest"
+//#else
+//1						RT_MANIFEST				"../../../Runtime/Launch/Resources/Windows/PCLaunch-Win32.manifest"
+//#endif
+//
+//#endif
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.

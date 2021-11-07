@@ -115,7 +115,7 @@ void SConfPanel::Construct(const FArguments& InArgs)
 											.HAlign(HAlign_Center)
 											[
 												SNew(SHyperlink)
-													.Text(LOCTEXT("Developer", "Developed by imzlp.me"))
+													.Text(LOCTEXT("Developer", "Developed by lipengzha"))
 													.OnNavigate(this, &SConfPanel::HyLinkClickEventOpenDeveloperWebsite)
 											]
 									]
@@ -342,7 +342,7 @@ void SConfPanel::Construct(const FArguments& InArgs)
 
 void SConfPanel::HyLinkClickEventOpenDeveloperWebsite()
 {
-	FPlatformProcess::LaunchURL(TEXT("https://imzlp.me"), NULL, NULL);
+	FPlatformProcess::LaunchURL(TEXT("https://imzlp.com"), NULL, NULL);
 }
 
 
@@ -712,15 +712,15 @@ void SConfPanel::UpdateOpenProjectSlnButton(const FString& SelectedProjectPath)
 	}
 }
 
-TSharedRef<SWidget> MakeWidgetUELauncher()
-{
-	extern TOptional<FSlateRenderTransform> GetTestRenderTransform();
-	extern FVector2D GetTestRenderTransformPivot();
-	return
-		SNew(SConfPanel)
-		.RenderTransform_Static(&GetTestRenderTransform)
-		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
-}
+// TSharedRef<SWidget> MakeWidgetUELauncher()
+// {
+// 	extern TOptional<FSlateRenderTransform> GetTestRenderTransform();
+// 	extern FVector2D GetTestRenderTransformPivot();
+// 	return
+// 		SNew(SConfPanel)
+// 		.RenderTransform_Static(&GetTestRenderTransform)
+// 		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
+// }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 #undef LOCTEXT_NAMESPACE

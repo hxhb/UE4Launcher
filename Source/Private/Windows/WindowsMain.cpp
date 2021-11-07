@@ -6,8 +6,8 @@
 #include <shellapi.h>
 
 int WinMain(
-	_In_ HINSTANCE hInstance,
-	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ HINSTANCE hInInstance,
+	_In_opt_ HINSTANCE hInPrevInstance,
 	_In_ LPSTR lpCmdLine,
 	_In_ int nShowCmd
 )

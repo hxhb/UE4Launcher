@@ -42,7 +42,7 @@ TSharedRef<SWidget> SCombBoxWarper::HandleGenerateWidget(TSharedPtr<FString> InI
 
 FText SCombBoxWarper::HandleSelectionChangeText() const
 {
-	return CurrentSelectedItem.IsValid() ? FText::FromString(*CurrentSelectedItem) : FText::FromString(TEXT("AAAAAAAAAAAAAAAAAAAA"));
+	return CurrentSelectedItem.IsValid() ? FText::FromString(*CurrentSelectedItem) : FText::FromString(TEXT("Not found any engine"));
 }
 
 void SCombBoxWarper::UpdateSelector(const TArray<FString>& pSelectorList,const FString& pSelectedItem)

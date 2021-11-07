@@ -2,6 +2,7 @@
 #include "Tools/SerializationTools.h"
 #include <shellapi.h>
 #include "Misc/FileHelper.h"
+#include <winreg.h>
 
 bool EngineLaunchTools::EngineLauncher(const FLaunchConf& conf)
 {
@@ -167,8 +168,8 @@ TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
 	else
 	{
 		TArray<FToolInfo> DefaultTools{
-			{ TEXT("UE4Editor"), TEXT(""), TEXT("Engine/Binaries/Win64") },
-			{ TEXT("UE4Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") },
+			{ TEXT("Editor"), TEXT(""), TEXT("Engine/Binaries/Win64") },
+			{ TEXT("Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") },
 			{ TEXT("UnrealFrontend"),TEXT(""),TEXT("Engine/Binaries/Win64") },
 			{ TEXT("NetworkProfiler"),TEXT(""),TEXT("Engine/Binaries/DotNET") }
 		};
@@ -210,7 +211,15 @@ FString EngineLaunchTools::GetToolBinPath(const FLaunchConf& conf)
 #define PLATFROM_EXECUTABLE_FORMAT TEXT(".exe")
 	FString resault(TEXT(""));
 	FToolInfo ToolInfo = EngineLaunchTools::GetToolInfo(conf.Tool);
-	resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
+	if (ToolInfo.ToolName.Equals(TEXT("Editor"),ESearchCase::IgnoreCase) || ToolInfo.ToolName.Equals(TEXT("Editor-cmd"), ESearchCase::IgnoreCase))
+	{
+		resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, TEXT("UE4")+ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
+		if (!FPaths::FileExists(resault))
+		{
+			resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, TEXT("Unreal") + ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
+		}
+	}
+	
 #undef PLATFROM_EXECUTABLE_FORMAT
 	return resault;
 }
