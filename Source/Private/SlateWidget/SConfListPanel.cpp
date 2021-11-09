@@ -256,7 +256,7 @@ void SConfigListPanel::Refresh()
 
 static FString GetGlobalConfigPath()
 {
-	FString GlobalConfigPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Global.json")));
+	FString GlobalConfigPath = FPaths::Combine(EngineLaunchTools::GetCurrentProgramDir(),TEXT("Global.json"));
 	return GlobalConfigPath;
 }
 void SConfigListPanel::ImportGlobalConfig()

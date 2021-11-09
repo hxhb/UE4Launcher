@@ -142,10 +142,8 @@ FString EngineLaunchTools::GetCurrentWorkDirectory()
 	return FString(CurrentDir);
 }
 
-
-TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
+FString EngineLaunchTools::GetCurrentProgramDir()
 {
-	TArray<FToolInfo> Result;
 	FString BinPATH = GetCurrentProgramFullName();
 	FPaths::MakeStandardFilename(BinPATH);
 
@@ -155,8 +153,13 @@ TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
 		FString Extern;
 		FPaths::Split(BinPATH, Path, Filename, Extern);
 	}
+	return Path;
+}
+TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
+{
+	TArray<FToolInfo> Result;
 	
-	FString LaunchToolsConfPath = FPaths::Combine(Path, TEXT("LaunchTools.json"));
+	FString LaunchToolsConfPath = FPaths::Combine(EngineLaunchTools::GetCurrentProgramDir(), TEXT("LaunchTools.json"));
 
 	// printf("%s", TCHAR_TO_ANSI(*LaunchToolsConfPath));
 	if (FPaths::FileExists(LaunchToolsConfPath))
