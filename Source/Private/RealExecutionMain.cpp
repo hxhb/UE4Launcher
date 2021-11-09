@@ -64,7 +64,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	// crank up a normal Slate application using the platform's standalone renderer
 	FSlateApplication::InitializeAsStandaloneApplication(GetStandardStandaloneRenderer());
 	// set the application name
-	FGlobalTabmanager::Get()->SetApplicationTitle(LOCTEXT("AppTitle", "UE4 Launcher"));
+	FGlobalTabmanager::Get()->SetApplicationTitle(LOCTEXT("AppTitle", "UE Launcher"));
 	FModuleManager::LoadModuleChecked<ISlateReflectorModule>("SlateReflector").RegisterTabSpawner(FWorkspaceItem::NewGroup(LOCTEXT("DeveloperMenu", "Developer")));
 
 
@@ -109,6 +109,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 			FTicker::GetCoreTicker().Tick(FApp::GetDeltaTime());
 			FSlateApplication::Get().PumpMessages();
 			FSlateApplication::Get().Tick();
+			FPlatformProcess::Sleep(0.03);
 		}
 	}
 
@@ -190,11 +191,11 @@ namespace WindowManager
 		if (!File.IsEmpty() && WindowManager::WindowsList.Num())
 		{
 			FString ConfFileName = EngineLaunchTools::GetFileNameByFullDir(File);
-			WindowManager::WindowsList[0]->SetTitle(FText::FromString(ConfFileName + TEXT(" | UE4 Launcher")));
+			WindowManager::WindowsList[0]->SetTitle(FText::FromString(ConfFileName + TEXT(" | UE Launcher")));
 		}
 		else
 		{
-			WindowManager::WindowsList[0]->SetTitle(FText::FromString(TEXT("UE4 Launcher")));
+			WindowManager::WindowsList[0]->SetTitle(FText::FromString(TEXT("UE Launcher")));
 		}
 	}
 };
