@@ -142,7 +142,7 @@ namespace WindowManager
 	TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile)
 	{
 		TSharedPtr<SWindow> ConfWindow = SNew(SWindow)
-			.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
+			.Title(LOCTEXT("MainWindow_Title", "UE Launcher"))
 			.ScreenPosition(FVector2D(800, 1200))
 			.ClientSize(FVector2D(1200, 800))
 			.SupportsMaximize(false)

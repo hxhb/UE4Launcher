@@ -71,6 +71,7 @@ public:
 	void AddConfig(const FLaunchConf& Conf);
 
 	void OnConfigSelected(class SConfigCard* Card);
+	void HyLinkClickEventOpenVersionWebsite();
 	FReply BtnClickEventRefresh();
 	FReply BtnClickEventRemove();
 	void Refresh();

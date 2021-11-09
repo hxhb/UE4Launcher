@@ -110,7 +110,7 @@ void SConfPanel::Construct(const FArguments& InArgs)
 									]
 								]
 								+SVerticalBox::Slot()
-								.Padding(3.0)
+								.Padding(1.5)
 									[
 										SNew(SHeader)
 										.HAlign(HAlign_Center)

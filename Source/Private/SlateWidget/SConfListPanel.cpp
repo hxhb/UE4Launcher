@@ -12,6 +12,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Input/SSpinBox.h"
+#include "Widgets/Input/SHyperlink.h"
 #include "Paths.h"
 
 // project files
@@ -37,9 +38,11 @@ void SConfigCard::Construct(const FArguments& InArgs,const FLaunchConf& Conf)
 		SNew(SOverlay)
 		+SOverlay::Slot()
 		.Padding(0,5,0,5)
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
 		[
 			SAssignNew(TextWidget,STextBlock)
-			.AutoWrapText(true)
+			.AutoWrapText(false)
 			.Text(FText::AsCultureInvariant(ConfigText))
 		]
 		+SOverlay::Slot()
@@ -114,7 +117,7 @@ void SConfigListPanel::Construct(const FArguments& InArgs)
 			SNew(SVerticalBox)
 			+SVerticalBox::Slot()
 			.AutoHeight()
-			.Padding(3.0)
+			.Padding(5.0)
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
@@ -133,10 +136,23 @@ void SConfigListPanel::Construct(const FArguments& InArgs)
 					.HAlign(HAlign_Center)
 					.OnClicked(this,&SConfigListPanel::BtnClickEventRemove)
 				]
+				+SHorizontalBox::Slot()
+				.FillWidth(1.0)
+				[
+					SNew(SOverlay)
+				]
+				+SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Center)
+				[
+					SNew(SHyperlink)
+					.Text(LOCTEXT("LauncherVersion", LAUNCHER_VERSION))
+					.OnNavigate(this, &SConfigListPanel::HyLinkClickEventOpenVersionWebsite)
+				]
 			]
 			+SVerticalBox::Slot()
 			.AutoHeight()
-			.Padding(3.0)
+			.Padding(1.5)
 			[
 				SNew(SHeader)
 				.HAlign(HAlign_Center)
@@ -168,6 +184,7 @@ void SConfigListPanel::AddConfig(const FLaunchConf& Conf)
 	{
 		TSharedPtr<SWidget> Widget = ConfigListWidget->AddSlot()
 		.Padding(1.5)
+		.AutoHeight()
 		[
 			SNew(SConfigCard,Conf)
 		].GetWidget();
@@ -191,6 +208,12 @@ void SConfigListPanel::OnConfigSelected(SConfigCard* Card)
 	Card->Selected();
 	OnConfigFileSelected.ExecuteIfBound(Card->Config);
 }
+
+void SConfigListPanel::HyLinkClickEventOpenVersionWebsite()
+{
+	FPlatformProcess::LaunchURL(TEXT("https://imzlp.com/posts/31962/"), NULL, NULL);
+}
+
 
 FReply SConfigListPanel::BtnClickEventRefresh()
 {
