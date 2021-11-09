@@ -2,50 +2,24 @@
 //
 #include "SlateWidget/SConfPanel.h"
 
-#include "Animation/CurveSequence.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SBoxPanel.h"
-#include "Styling/SlateTypes.h"
-#include "Styling/CoreStyle.h"
-#include "Layout/WidgetPath.h"
 #include "SlateOptMacros.h"
-#include "Framework/Application/MenuStack.h"
 #include "Framework/Application/SlateApplication.h"
-#include "Widgets/Layout/SFxWidget.h"
 #include "Widgets/Layout/SBorder.h"
-#include "Widgets/Layout/SSeparator.h"
-#include "Widgets/Layout/SSpacer.h"
-#include "Widgets/Images/SImage.h"
-#include "Widgets/Images/SSpinningImage.h"
-#include "Widgets/Notifications/SProgressBar.h"
 #include "Widgets/Text/STextBlock.h"
-#include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SHeader.h"
 #include "Widgets/Layout/SGridPanel.h"
-#include "Widgets/Input/SMenuAnchor.h"
 #include "Widgets/Text/SMultiLineEditableText.h"
-#include "Widgets/Input/SMultiLineEditableTextBox.h"
-#include "Widgets/Input/SEditableText.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SButton.h"
-#include "Widgets/Input/SComboButton.h"
 #include "Widgets/Layout/SScrollBox.h"
-#include "Widgets/Colors/SColorBlock.h"
-#include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SSpinBox.h"
-#include "Widgets/Input/SSlider.h"
-#include "Widgets/Input/SComboBox.h"
-#include "Framework/Docking/TabManager.h"
-#include "Widgets/Input/SSearchBox.h"
-#include "Widgets/Docking/SDockTab.h"
-#include "Widgets/Navigation/SBreadcrumbTrail.h"
-#include "Widgets/Images/SThrobber.h"
 #include "Widgets/Input/SHyperlink.h"
-#include "Widgets/Input/STextComboBox.h"
-#include "Widgets/Input/SVolumeControl.h"
-#include "Widgets/Input/STextComboPopup.h"
 #include "Paths.h"
+#include "IDesktopPlatform.h"
+#include "DesktopPlatformModule.h"
 
 // project files
 #include "SlateWidget/SEditableBoxWraper.h"
@@ -81,16 +55,6 @@ void SConfPanel::Construct(const FArguments& InArgs)
 							[
 								SNew(SVerticalBox)
 								+SVerticalBox::Slot()
-								[
-									SNew(SHeader)
-									.HAlign(HAlign_Center)
-									.Content()
-									[
-										SNew(STextBlock)
-										.Text(LOCTEXT("LoadSaveConfig", "Load/Save Config & Developer Info"))
-									]
-								]
-								+SVerticalBox::Slot()
 								.AutoHeight()
 								[
 									SNew(SHorizontalBox)
@@ -98,20 +62,45 @@ void SConfPanel::Construct(const FArguments& InArgs)
 									[
 										SNew(SHorizontalBox)
 										+ SHorizontalBox::Slot()
+											.AutoWidth()
 											[
 												SNew(SButton)
-												.Text(LOCTEXT("LoadConfig", "Load Config"))
+												.Text(LOCTEXT("LoadConfig", "Load"))
 												.HAlign(HAlign_Center)
 												.OnClicked(this, &SConfPanel::BtnClickEventLoadConfig)
 											]
 										+ SHorizontalBox::Slot()
+											.AutoWidth()
 											[
 												SNew(SButton)
-												.Text(LOCTEXT("SaveConfig", "Save Config"))
+												.Text(LOCTEXT("SaveConfig", "Save"))
 											.HAlign(HAlign_Center)
 											.OnClicked(this, &SConfPanel::BtnClickEventSaveConfig)
 											]
-										+SHorizontalBox::Slot()
+											+ SHorizontalBox::Slot()
+											.AutoWidth()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("ResetConfig","Reset"))
+												.HAlign(HAlign_Center)
+												.VAlign(VAlign_Center)
+												.OnClicked(this, &SConfPanel::BtnClickEventClearConfig)
+											]
+											+ SHorizontalBox::Slot()
+											.AutoWidth()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("AddToGlobalConfig", "Add To Global"))
+												.HAlign(HAlign_Center)
+												.OnClicked(this, &SConfPanel::BtnClickEventAddToGlobal)
+											]
+											+SHorizontalBox::Slot()
+											.FillWidth(1.0)
+											[
+												SNew(SOverlay)
+											]
+											+SHorizontalBox::Slot()
+											.AutoWidth()
 											.HAlign(HAlign_Center)
 											[
 												SNew(SHyperlink)
@@ -121,6 +110,7 @@ void SConfPanel::Construct(const FArguments& InArgs)
 									]
 								]
 								+SVerticalBox::Slot()
+								.Padding(3.0)
 									[
 										SNew(SHeader)
 										.HAlign(HAlign_Center)
@@ -274,14 +264,21 @@ void SConfPanel::Construct(const FArguments& InArgs)
 									.AutoHeight()
 									[
 										SNew(SHorizontalBox)
+										+SHorizontalBox::Slot()
+										.FillWidth(1.0)
+										[
+											SNew(SOverlay)
+										]
 										+ SHorizontalBox::Slot()
+										.AutoWidth()
 										[
 											SNew(SButton)
-											.Text(LOCTEXT("ClearAllParams", "Clear All Params"))
+											.Text(LOCTEXT("ClearAllParams", "Clear All"))
 											.HAlign(HAlign_Center)
 											.OnClicked(this, &SConfPanel::BtnClickEventClearAllLaunchParamsButton)
 										]
 										+ SHorizontalBox::Slot()
+										.AutoWidth()
 											[
 												SNew(SButton)
 												.Text(LOCTEXT("AddParameter", "Add Parameter"))
@@ -293,14 +290,15 @@ void SConfPanel::Construct(const FArguments& InArgs)
 
 					// SHeader
 					+ SGridPanel::Slot(0, 6)
-						.Padding(0.0f, 3.0f, 0.0f, 3.0f)
+						// .Padding(0.0f, 3.0f, 0.0f, 3.0f)
+						.Padding(3.0)
 						[
 							SNew(SHeader)
 							.HAlign(HAlign_Center)
 							.Content()
 							[
 								SNew(STextBlock)
-								.Text(LOCTEXT("ManageConfig", "Manage Config"))
+								.Text(LOCTEXT("ManageConfig", "Configuration Manager"))
 							]
 						]
 
@@ -308,15 +306,13 @@ void SConfPanel::Construct(const FArguments& InArgs)
 					+ SGridPanel::Slot(0, 7)
 						[
 							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-							[
-								SNew(SButton)
-								.Text(LOCTEXT("ClearConfig","Clear Config"))
-								.HAlign(HAlign_Center)
-								.VAlign(VAlign_Center)
-								.OnClicked(this, &SConfPanel::BtnClickEventClearConfig)
-							]
 							+SHorizontalBox::Slot()
+							.FillWidth(1.0)
+							[
+								SNew(SOverlay)
+							]
+							+ SHorizontalBox::Slot()
+							.AutoWidth()
 							[
 								SAssignNew(BtnLaunchProject, SButton)
 								.Text(this, &SConfPanel::GetLaunchProjectBtnText)
@@ -357,7 +353,6 @@ FReply SConfPanel::BtnClickEventClearAllLaunchParamsButton()
 	AddParamTextBoxToSlot(TEXT(""));
 	return FReply::Handled();
 }
-
 
 FReply SConfPanel::BtnClickEventLaunchEngine()
 {
@@ -485,6 +480,12 @@ FReply SConfPanel::BtnClickEventLoadConfig()
 			}
 		}
 	}
+	return FReply::Handled();
+}
+
+FReply SConfPanel::BtnClickEventAddToGlobal()
+{
+	OnAddToGlobal.ExecuteIfBound(GetLaunchConf());
 	return FReply::Handled();
 }
 FReply SConfPanel::BtnClickEventSaveConfig()

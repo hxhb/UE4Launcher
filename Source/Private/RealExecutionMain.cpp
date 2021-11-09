@@ -102,7 +102,7 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 	if (CommandHandler::HasWindow)
 	{
 		// main loop
-		while (!GIsRequestingExit)
+		while (!IsEngineExitRequested())
 		{
 			FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
 			FStats::AdvanceFrame(false);
@@ -119,31 +119,62 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 }
 
 
+#include "SlateWidget/SConfigListPanel.h"
 
 namespace WindowManager
 {
+	static TSharedPtr < SConfPanel > LauncherPanel;
+	static TSharedPtr < SConfigListPanel > LauncherConfListPanel;
+	void OnConfigSelected(FLaunchConf Config)
+	{
+		if(LauncherPanel.IsValid())
+		{
+			LauncherPanel->UpdateAll(Config);
+		}
+	}
+	void OnAddToGlobal(FLaunchConf Config)
+	{
+		if(LauncherConfListPanel.IsValid())
+		{
+			LauncherConfListPanel->AddConfig(Config);
+		}
+	}
 	TSharedPtr<SWindow> CreateConfWindow(const FLaunchConf& Conf, const FString& ConfFile)
 	{
-		TSharedPtr < SConfPanel > LauncherPanel;
 		TSharedPtr<SWindow> ConfWindow = SNew(SWindow)
 			.Title(LOCTEXT("MainWindow_Title", "UE4 Launcher"))
-			.ScreenPosition(FVector2D(520, 550))
-			.ClientSize(FVector2D(520, 550))
+			.ScreenPosition(FVector2D(800, 1200))
+			.ClientSize(FVector2D(1200, 800))
 			.SupportsMaximize(false)
 			.AutoCenter(EAutoCenter::PrimaryWorkArea)
-			.MaxHeight(800)
-			.MaxWidth(650)
-			.MinHeight(580)
-			.MinWidth(520)
+			// .MaxHeight(1000)
+			// .MaxWidth(650)
+			.MinHeight(800)
+			.MinWidth(1200)
 			.IsTopmostWindow(false)
 			[
-				SAssignNew(LauncherPanel, SConfPanel)
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				.FillWidth(0.3)
+				[
+					SNew(SBox)
+					[
+						SAssignNew(LauncherConfListPanel,SConfigListPanel)
+					]
+				]
+				+SHorizontalBox::Slot()
+				.FillWidth(0.7)
+				[
+					SAssignNew(LauncherPanel, SConfPanel)
+				]
 				//.OnOpenedFileEvent.BindStatic(&WindowManager::OnOpenFileChangeWindowTitle)
 			];
+		LauncherConfListPanel->OnConfigFileSelected.BindStatic(&WindowManager::OnConfigSelected);
+		LauncherPanel->OnAddToGlobal.BindStatic(&WindowManager::OnAddToGlobal);
 		WindowManager::WindowsList.Add(ConfWindow);
 		// show the window
 		FSlateApplication::Get().AddWindow(ConfWindow.ToSharedRef());
-
+		
 		// Bind Opened file Event
 		LauncherPanel->OnOpenedFileEvent.BindStatic(&WindowManager::OnOpenFileChangeWindowTitle);
 		// Set Current Opened Conf File

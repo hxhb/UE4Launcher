@@ -12,6 +12,7 @@ class SConfPanel;
 // TSharedRef<SWidget> MakeWidgetUELauncher();
 
 DECLARE_DELEGATE_OneParam(FOnOpendFile, const FString&)
+DECLARE_DELEGATE_OneParam(FOnAddToGlobal, FLaunchConf)
 
 class SConfPanel :public SCompoundWidget
 {
@@ -74,6 +75,7 @@ public:
 	// read/write config
 	FReply BtnClickEventLoadConfig();
 	FReply BtnClickEventSaveConfig();
+	FReply BtnClickEventAddToGlobal();
 	FReply BtnClickEventClearConfig();
 	// open Developer website
 	void HyLinkClickEventOpenDeveloperWebsite();
@@ -110,6 +112,7 @@ protected:
 public:
 	void HandleEngineSelectorChanged(const FString& NewEngine);
 
+	FOnAddToGlobal OnAddToGlobal;
 private:
 	// Main panel scrollbox
 	TSharedPtr<SScrollBox> SrbWidgetMain;

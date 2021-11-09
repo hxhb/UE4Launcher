@@ -3,7 +3,8 @@
 #include <shellapi.h>
 #include "Misc/FileHelper.h"
 #include <winreg.h>
-
+#include "DesktopPlatformModule.h"
+#include <windows.h>
 bool EngineLaunchTools::EngineLauncher(const FLaunchConf& conf)
 {
 	FString BinPath = EngineLaunchTools::GetToolBinPath(conf);
@@ -171,6 +172,7 @@ TArray<FToolInfo> EngineLaunchTools::GetToolsInfoList()
 			{ TEXT("Editor"), TEXT(""), TEXT("Engine/Binaries/Win64") },
 			{ TEXT("Editor-cmd"),TEXT(""),TEXT("Engine/Binaries/Win64") },
 			{ TEXT("UnrealFrontend"),TEXT(""),TEXT("Engine/Binaries/Win64") },
+			{ TEXT("IPhonePackager"),TEXT(""),TEXT("Engine/Binaries/DotNET/IOS") },
 			{ TEXT("NetworkProfiler"),TEXT(""),TEXT("Engine/Binaries/DotNET") }
 		};
 		FString DefaultToolsContent = SerializationTools::SerializeToolsAsString(DefaultTools);
@@ -218,6 +220,10 @@ FString EngineLaunchTools::GetToolBinPath(const FLaunchConf& conf)
 		{
 			resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, TEXT("Unreal") + ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
 		}
+	}
+	else
+	{
+		resault = FPaths::Combine(conf.Engine, ToolInfo.BinPath, ToolInfo.ToolName + PLATFROM_EXECUTABLE_FORMAT);
 	}
 	
 #undef PLATFROM_EXECUTABLE_FORMAT

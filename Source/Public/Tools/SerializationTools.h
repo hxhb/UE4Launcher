@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Data/FLaunchConf.h"
 #include "UnrealString.h"
 #include "Json.h"
 
@@ -9,7 +9,8 @@ class SerializationTools
 public:
 	static FString SerializationConf(const FLaunchConf& SaveConfig);
 	static FLaunchConf DeSerializationConf(const FString& jsonConf);
-
+	static TSharedPtr<FJsonObject> SerializationConfAsJsonObj(const FLaunchConf& SaveConfig);
+	static FLaunchConf DeSerializationConfByJsonObj(TSharedPtr<FJsonObject> JsonObject);
 	static FString SerializeToolsAsString(const TArray<struct FToolInfo>& InTools);
 	static TArray<struct FToolInfo> DeSerializeToolsByString(const FString& InToolsStr);
 

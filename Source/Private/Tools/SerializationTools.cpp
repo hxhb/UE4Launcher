@@ -1,7 +1,6 @@
 #include "Tools/SerializationTools.h"
 #include "Tools/EngineLaunchTools.h"
-
-FString SerializationTools::SerializationConf(const FLaunchConf& SaveConfig)
+TSharedPtr<FJsonObject> SerializationTools::SerializationConfAsJsonObj(const FLaunchConf& SaveConfig)
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	JsonObject->SetStringField(TEXT("Engine"), SaveConfig.Engine);
@@ -16,12 +15,35 @@ FString SerializationTools::SerializationConf(const FLaunchConf& SaveConfig)
 	}
 
 	JsonObject->SetArrayField(TEXT("Params"), ParamsJonsObjList);
+
+	return JsonObject;
+}
+
+FString SerializationTools::SerializationConf(const FLaunchConf& SaveConfig)
+{
+	TSharedPtr<FJsonObject> JsonObject = SerializationTools::SerializationConfAsJsonObj(SaveConfig);
 	FString JsonStr;
 	auto JsonWriter = TJsonWriterFactory<>::Create(&JsonStr);
 	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter);
 
 	return JsonStr;
 }
+
+FLaunchConf SerializationTools::DeSerializationConfByJsonObj(TSharedPtr<FJsonObject> JsonObject)
+{
+	FLaunchConf loadConf;
+	loadConf.Engine = JsonObject->GetStringField(TEXT("Engine"));
+	loadConf.Tool = JsonObject->GetStringField(TEXT("Tool"));
+	loadConf.ToolPreArgs = JsonObject->GetStringField(TEXT("ToolPreArgs"));
+	loadConf.Project = JsonObject->GetStringField(TEXT("Project"));
+	TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("Params");
+	for (const auto& DataItem : LaunchParamsData)
+	{
+		loadConf.Params.Add(DataItem->AsString());
+	}
+	return loadConf;
+}
+	
 FLaunchConf SerializationTools::DeSerializationConf(const FString& jsonConf)
 {
 	FLaunchConf loadConf;
@@ -29,15 +51,7 @@ FLaunchConf SerializationTools::DeSerializationConf(const FString& jsonConf)
 	TSharedPtr<FJsonObject> JsonObject;
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
-		loadConf.Engine = JsonObject->GetStringField(TEXT("Engine"));
-		loadConf.Tool = JsonObject->GetStringField(TEXT("Tool"));
-		loadConf.ToolPreArgs = JsonObject->GetStringField(TEXT("ToolPreArgs"));
-		loadConf.Project = JsonObject->GetStringField(TEXT("Project"));
-		TArray<TSharedPtr<FJsonValue>> LaunchParamsData = JsonObject->GetArrayField("Params");
-		for (const auto& DataItem : LaunchParamsData)
-		{
-			loadConf.Params.Add(DataItem->AsString());
-		}
+		loadConf = SerializationTools::DeSerializationConfByJsonObj(JsonObject);
 	}
 	return loadConf;
 }

@@ -11,33 +11,33 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 	OnDeleteSelgClicked = InArgs._OnDeleteClicked;
 	ChildSlot
 		[
-		SAssignNew(HorzontaBox, SHorizontalBox)
-		+ SHorizontalBox::Slot()
-		.FillWidth(1.0f)
-		[
-			SAssignNew(EditableTextBox,SEditableTextBox)
-			.Text(InArgs._EditableText)
-			.HintText(InArgs._EditableHintText)
-		]
-		+ SHorizontalBox::Slot()
-		.AutoWidth()
-		[
-			SNew(SButton)
-			.Text(InArgs._BtnClearText)
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
-			.OnClicked(this, &SEditableBoxWraper::OnClickEventClearText)
-		]
-		// open uproject file button
-		+ SHorizontalBox::Slot()
+			SAssignNew(HorzontaBox, SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			[
+				SAssignNew(EditableTextBox,SEditableTextBox)
+				.Text(InArgs._EditableText)
+				.HintText(InArgs._EditableHintText)
+			]
+			+ SHorizontalBox::Slot()
 			.AutoWidth()
 			[
 				SNew(SButton)
-				.Text(InArgs._BtnDeleteText)
+				.Text(InArgs._BtnClearText)
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.OnClicked(this,&SEditableBoxWraper::OnClickEventDeleteSelf)
+				.OnClicked(this, &SEditableBoxWraper::OnClickEventClearText)
 			]
+			// open uproject file button
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SButton)
+					.Text(InArgs._BtnDeleteText)
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+					.OnClicked(this,&SEditableBoxWraper::OnClickEventDeleteSelf)
+				]
 	];
 	
 }
