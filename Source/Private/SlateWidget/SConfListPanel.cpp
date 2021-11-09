@@ -14,7 +14,8 @@
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Input/SHyperlink.h"
 #include "Paths.h"
-
+#include "IDesktopPlatform.h"
+#include "DesktopPlatformModule.h"
 // project files
 #include "Widgets/SCanvas.h"
 #include "Tools/SerializationTools.h"
@@ -23,6 +24,7 @@
 #define LOCTEXT_NAMESPACE "WidgetConfigListPanel"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
 
 void SConfigCard::Construct(const FArguments& InArgs,const FLaunchConf& Conf)
 {
@@ -108,6 +110,12 @@ void SConfigCard::RemoveFromParent()
 	bIsRemoved = true;
 }
 
+static FString GetGlobalConfigPath()
+{
+	FString GlobalConfigPath = FPaths::Combine(EngineLaunchTools::GetCurrentProgramDir(),TEXT("Global.json"));
+	return GlobalConfigPath;
+}
+
 void SConfigListPanel::Construct(const FArguments& InArgs)
 {
 	ChildSlot
@@ -120,6 +128,14 @@ void SConfigListPanel::Construct(const FArguments& InArgs)
 			.Padding(5.0)
 			[
 				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("LoadGlobal", "Load Global"))
+					.HAlign(HAlign_Center)
+					.OnClicked(this,&SConfigListPanel::BtnClickEventLoadGlobal)
+				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
 				[
@@ -175,7 +191,7 @@ void SConfigListPanel::Construct(const FArguments& InArgs)
 			
 		]
 	];
-	ImportGlobalConfig();
+	ImportGlobalConfig(GetGlobalConfigPath());
 }
 
 void SConfigListPanel::AddConfig(const FLaunchConf& Conf)
@@ -214,6 +230,37 @@ void SConfigListPanel::HyLinkClickEventOpenVersionWebsite()
 	FPlatformProcess::LaunchURL(TEXT("https://imzlp.com/posts/31962/"), NULL, NULL);
 }
 
+FReply SConfigListPanel::BtnClickEventLoadGlobal()
+{
+	CleanAllConfig();
+	FString SelectedLoadConfigPath;
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+
+	if (DesktopPlatform)
+	{
+		TSharedPtr<SWindow> ParentWindow = FSlateApplication::Get().FindWidgetWindow(SharedThis(this));
+
+		TArray<FString> OpenFilenames;
+		const bool bOpened = DesktopPlatform->OpenFileDialog(
+			(ParentWindow.IsValid()) ? ParentWindow->GetNativeWindow()->GetOSWindowHandle() : nullptr,
+			LOCTEXT("OpenUELauncherGlobalConfig", "Open .json").ToString(),
+			FString(TEXT("")),
+			TEXT(""),
+			TEXT("UELauncher json (*.json)|*.json"),
+			EFileDialogFlags::None,
+			OpenFilenames
+		);
+
+		if (OpenFilenames.Num() > 0)
+		{
+			SelectedLoadConfigPath = FPaths::ConvertRelativePathToFull(OpenFilenames[0]);
+			ImportGlobalConfig(SelectedLoadConfigPath);
+		}
+	}
+	
+	return FReply::Handled();
+}
+
 
 FReply SConfigListPanel::BtnClickEventRefresh()
 {
@@ -242,7 +289,7 @@ FReply SConfigListPanel::BtnClickEventRemove()
 	return FReply::Handled();
 }
 
-void SConfigListPanel::Refresh()
+void SConfigListPanel::CleanAllConfig()
 {
 	for(int32 index = 0;index < ConfigCardsWidget.Num();)
 	{
@@ -251,18 +298,19 @@ void SConfigListPanel::Refresh()
 		ConfigListWidget->RemoveSlot(ConfigCardsWidget[index].ToSharedRef());
 		ConfigCardsWidget.RemoveAt(index);
 	}
-	ImportGlobalConfig();
 }
 
-static FString GetGlobalConfigPath()
+void SConfigListPanel::Refresh()
 {
-	FString GlobalConfigPath = FPaths::Combine(EngineLaunchTools::GetCurrentProgramDir(),TEXT("Global.json"));
-	return GlobalConfigPath;
+	CleanAllConfig();
+	ImportGlobalConfig(GetGlobalConfigPath());
 }
-void SConfigListPanel::ImportGlobalConfig()
+
+
+void SConfigListPanel::ImportGlobalConfig(const FString& ConfigFile)
 {
 	FString JsonStr;
-	FFileHelper::LoadFileToString(JsonStr, *GetGlobalConfigPath());
+	FFileHelper::LoadFileToString(JsonStr, *ConfigFile);
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonStr);
 	TSharedPtr<FJsonObject> JsonObject;
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))

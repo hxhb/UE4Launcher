@@ -72,10 +72,12 @@ public:
 
 	void OnConfigSelected(class SConfigCard* Card);
 	void HyLinkClickEventOpenVersionWebsite();
+	FReply BtnClickEventLoadGlobal();
 	FReply BtnClickEventRefresh();
 	FReply BtnClickEventRemove();
+	void CleanAllConfig();
 	void Refresh();
-	void ImportGlobalConfig();
+	void ImportGlobalConfig(const FString& ConfigFile);
 	void SaveGlobalConfig();
 	
 	FOnConfigFileSelected OnConfigFileSelected;
