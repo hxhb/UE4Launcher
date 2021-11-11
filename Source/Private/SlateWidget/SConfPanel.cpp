@@ -86,14 +86,6 @@ void SConfPanel::Construct(const FArguments& InArgs)
 												.VAlign(VAlign_Center)
 												.OnClicked(this, &SConfPanel::BtnClickEventClearConfig)
 											]
-											+ SHorizontalBox::Slot()
-											.AutoWidth()
-											[
-												SNew(SButton)
-												.Text(LOCTEXT("AddToGlobalConfig", "Add To Global"))
-												.HAlign(HAlign_Center)
-												.OnClicked(this, &SConfPanel::BtnClickEventAddToGlobal)
-											]
 											+SHorizontalBox::Slot()
 											.FillWidth(1.0)
 											[
@@ -170,7 +162,7 @@ void SConfPanel::Construct(const FArguments& InArgs)
 											.AutoWidth()
 											[
 												SAssignNew(BtnOpenVS, SButton)
-												.Text(LOCTEXT("OpenVS", "OpenVS"))
+												.Text(LOCTEXT("OpenSln", "OpenSln"))
 												.OnClicked(this, &SConfPanel::BtnClickEventOpenVS)
 											]
 									]
@@ -314,6 +306,14 @@ void SConfPanel::Construct(const FArguments& InArgs)
 							+ SHorizontalBox::Slot()
 							.AutoWidth()
 							[
+								SNew(SButton)
+								.Text(LOCTEXT("AddToGlobalConfig", "Add To Global"))
+								.HAlign(HAlign_Center)
+								.OnClicked(this, &SConfPanel::BtnClickEventAddToGlobal)
+							]
+							+ SHorizontalBox::Slot()
+							.AutoWidth()
+							[
 								SAssignNew(BtnLaunchProject, SButton)
 								.Text(this, &SConfPanel::GetLaunchProjectBtnText)
 								.HAlign(HAlign_Center)
@@ -420,7 +420,7 @@ FReply SConfPanel::BtnClickEventOpenProjectSln()
 			local_ProjectSln.InsertAt(0, TEXT("\""));
 		}
 
-		FString FinalCmdParams = TEXT("/c start devenv.exe ") + local_ProjectSln;
+		FString FinalCmdParams = TEXT("/c ") + local_ProjectSln;
 		FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	}
 	return FReply::Handled();
@@ -433,7 +433,7 @@ FReply SConfPanel::BtnClickEventOpenVS()
 		ue4sln.InsertAt(0, TEXT("\""));
 		ue4sln.Append(TEXT("\""));
 	}
-	FString FinalCmdParams = TEXT("/c start devenv.exe ") + ue4sln;
+	FString FinalCmdParams = TEXT("/c ") + ue4sln;
 	FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
 }

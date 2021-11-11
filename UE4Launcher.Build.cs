@@ -50,7 +50,7 @@ public class UE4Launcher : ModuleRules
                 "SlateReflector",
             }
         );
-        PublicDefinitions.Add("LAUNCHER_VERSION=\"v0.20\"");
+        PublicDefinitions.Add("LAUNCHER_VERSION=\"v0.21\"");
     }
 }
 

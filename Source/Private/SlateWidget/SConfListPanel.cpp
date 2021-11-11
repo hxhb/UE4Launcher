@@ -227,7 +227,7 @@ void SConfigListPanel::OnConfigSelected(SConfigCard* Card)
 
 void SConfigListPanel::HyLinkClickEventOpenVersionWebsite()
 {
-	FPlatformProcess::LaunchURL(TEXT("https://imzlp.com/posts/31962/"), NULL, NULL);
+	FPlatformProcess::LaunchURL(TEXT("https://imzlp.com/posts/3635/"), NULL, NULL);
 }
 
 FReply SConfigListPanel::BtnClickEventLoadGlobal()
