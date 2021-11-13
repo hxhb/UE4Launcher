@@ -5,6 +5,43 @@
 #include <winreg.h>
 #include "DesktopPlatformModule.h"
 #include <windows.h>
+
+EngineBuildVersion EngineLaunchTools::GetBuildVersion(const FString& EngineRoot)
+{
+	EngineBuildVersion BuildVersion{};
+
+	FString BuildVersionFile = FPaths::Combine(EngineRoot,TEXT("Engine/Build/Build.version"));
+	FString jsonValue;
+	bool flag = FFileHelper::LoadFileToString(jsonValue, *BuildVersionFile);
+	if(flag)
+	{
+		TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(jsonValue);
+		TSharedPtr<FJsonObject> JsonObject;
+		if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+		{
+			BuildVersion.MajorVersion = JsonObject->GetIntegerField(TEXT("MajorVersion"));
+			BuildVersion.MinorVersion = JsonObject->GetIntegerField(TEXT("MinorVersion"));
+			BuildVersion.PatchVersion = JsonObject->GetIntegerField(TEXT("PatchVersion"));
+		}
+	}
+	return BuildVersion;
+}
+
+FString EngineLaunchTools::GetUnrealBuildToolBin(const FString& EngineRoot, const EngineBuildVersion& Version)
+{
+	FString result;
+	if(Version.MajorVersion > 4)
+	{
+		result = FPaths::Combine(EngineRoot,TEXT("Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe"));
+	}
+	if(Version.MajorVersion == 4)
+	{
+		result = FPaths::Combine(EngineRoot,TEXT("Engine/Binaries/DotNET/UnrealBuildTool.exe"));
+	}
+
+	return result;
+}
+
 bool EngineLaunchTools::EngineLauncher(const FLaunchConf& conf)
 {
 	FString BinPath = EngineLaunchTools::GetToolBinPath(conf);

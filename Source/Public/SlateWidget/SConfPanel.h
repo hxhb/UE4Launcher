@@ -72,6 +72,7 @@ public:
 	FReply BtnClickEventOpenProjectFileDir();
 	// open project sln
 	FReply BtnClickEventOpenProjectSln();
+	FReply BtnClickEventGenerateProjectSln();
 	// read/write config
 	FReply BtnClickEventLoadConfig();
 	FReply BtnClickEventSaveConfig();
@@ -80,7 +81,7 @@ public:
 	// open Developer website
 	void HyLinkClickEventOpenDeveloperWebsite();
 
-
+	EVisibility BtnGenerateSlnVisibility()const;
 	//
 	void SetOpenedFile(const FString& Path=TEXT(""));
 	FString GetOpenedFile()const;
@@ -124,6 +125,7 @@ private:
 	// button
 	TSharedPtr<SButton> BtnLaunchEngine;
 	TSharedPtr<SButton> BtnOpenVS;
+	TSharedPtr<SButton> BtnGenerateSln;
 	TSharedPtr<SButton> BtnOpenProjectSln;
 	TSharedPtr<SButton> BtnLaunchProject;
 

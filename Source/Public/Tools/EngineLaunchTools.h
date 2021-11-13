@@ -14,9 +14,21 @@ struct FToolInfo
 	FString BinPath;
 };
 
+
+
+struct EngineBuildVersion
+{
+	EngineBuildVersion()=default;
+	int32 MajorVersion;
+	int32 MinorVersion;
+	int32 PatchVersion;
+};
+
 class EngineLaunchTools
 {
 public:
+	static EngineBuildVersion GetBuildVersion(const FString& EngineRoot);
+	static FString GetUnrealBuildToolBin(const FString& EngineRoot,const EngineBuildVersion& Version);
 	static bool EngineLauncher(const FLaunchConf& conf);
 	static FString CombineLaunchParams(const FLaunchConf& conf);
 	//static FString GetEngineBinPath(const FLaunchConf& conf);

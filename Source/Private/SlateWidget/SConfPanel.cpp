@@ -153,7 +153,7 @@ void SConfPanel::Construct(const FArguments& InArgs)
 										.AutoWidth()
 										[
 											SAssignNew(BtnLaunchEngine, SButton)
-											//.Text(LOCTEXT("LaunchEngine", "Launch"))
+											.Text(LOCTEXT("LaunchEngine", "Launch"))
 											.Text(this, &SConfPanel::GetLaunchEngineBtnText)
 											.OnClicked(this, &SConfPanel::BtnClickEventLaunchEngine)
 										]
@@ -214,6 +214,17 @@ void SConfPanel::Construct(const FArguments& InArgs)
 											.HAlign(HAlign_Center)
 											.VAlign(VAlign_Center)
 											.OnClicked(this, &SConfPanel::BtnClickEventOpenProjectFileDir)
+										]
+									+ SHorizontalBox::Slot()
+										//.FillWidth(0.3f)
+										.AutoWidth()
+										[
+											SAssignNew(BtnGenerateSln, SButton)
+											.Text(LOCTEXT("GenerateSln", "GenerateSln"))
+											.HAlign(HAlign_Center)
+											.VAlign(VAlign_Center)
+											.Visibility_Raw(this,&SConfPanel::BtnGenerateSlnVisibility)
+											.OnClicked(this, &SConfPanel::BtnClickEventGenerateProjectSln)
 										]
 									+ SHorizontalBox::Slot()
 										//.FillWidth(0.3f)
@@ -335,12 +346,22 @@ void SConfPanel::Construct(const FArguments& InArgs)
 	}
 
 }
-
+#include "Layout/Visibility.h"
 void SConfPanel::HyLinkClickEventOpenDeveloperWebsite()
 {
 	FPlatformProcess::LaunchURL(TEXT("https://imzlp.com"), NULL, NULL);
 }
 
+EVisibility SConfPanel::BtnGenerateSlnVisibility()const
+{
+	EVisibility VisibilityStatus = EVisibility::Hidden;
+	FString ProjectPath = GetLaunchConf().Project;
+	if(ProjectPath.EndsWith(TEXT(".uproject")) && FPaths::FileExists(ProjectPath))
+	{
+		VisibilityStatus = EVisibility::Visible;
+	}
+	return VisibilityStatus;
+}
 
 FReply SConfPanel::BtnClickEventAddLaunchParamButton()
 {
@@ -422,6 +443,23 @@ FReply SConfPanel::BtnClickEventOpenProjectSln()
 
 		FString FinalCmdParams = TEXT("/c ") + local_ProjectSln;
 		FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
+	}
+	return FReply::Handled();
+}
+
+FReply SConfPanel::BtnClickEventGenerateProjectSln()
+{
+	FString EnginePath = GetLaunchConf().Engine;
+	FString ProjectFile = GetLaunchConf().Project;
+	FString UnrealBuildTool = EngineLaunchTools::GetUnrealBuildToolBin(EnginePath,EngineLaunchTools::GetBuildVersion(EnginePath));
+	
+	if(!UnrealBuildTool.IsEmpty() && ProjectFile.EndsWith(TEXT(".uproject")))
+	{
+		FString AllParams = FString::Printf(
+			TEXT("-projectfiles -project=\"%s\" -game -rocket -progress"),
+			*ProjectFile
+			);
+		FPlatformProcess::CreateProc(*UnrealBuildTool, *AllParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	}
 	return FReply::Handled();
 }
