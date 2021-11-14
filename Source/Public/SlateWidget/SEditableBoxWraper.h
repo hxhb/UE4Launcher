@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 
+class SEditableBoxWraper;
 /**
  * 
  */
@@ -21,11 +22,13 @@ public:
 	SLATE_BEGIN_ARGS(SEditableBoxWraper)
 		:_EditableText()
 		,_EditableHintText()
+		,_BtnOpenText()
 		,_BtnClearText()
 		,_BtnDeleteText()
 	{}
 	SLATE_ATTRIBUTE(FText, EditableText)
 	SLATE_ATTRIBUTE(FText, EditableHintText)
+	SLATE_ATTRIBUTE(FText, BtnOpenText)
 	SLATE_ATTRIBUTE(FText, BtnClearText)
 	SLATE_ATTRIBUTE(FText, BtnDeleteText)
 	SLATE_EVENT(FOnDeleteClicked, OnDeleteClicked)
@@ -40,6 +43,7 @@ public:
 
 public:
 	FReply OnClickEventClearText();
+	FReply OnClickEventOpenText();
 	FReply OnClickEventDeleteSelf();
 
 private:

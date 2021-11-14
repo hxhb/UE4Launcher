@@ -66,6 +66,7 @@ public:
 	// Lcunch Engine
 	FReply BtnClickEventLaunchEngine();
 	FReply BtnClickEventOpenVS();
+	FReply BtnClickEventOpenEngineDir();
 	// Open uproject file clickd event
 	FReply BtnClickEventOpenProjectFile();
 	// open project directory

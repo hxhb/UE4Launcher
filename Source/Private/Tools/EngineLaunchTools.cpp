@@ -5,6 +5,27 @@
 #include <winreg.h>
 #include "DesktopPlatformModule.h"
 #include <windows.h>
+#include "Templates/SharedPointer.h"
+
+TArray<FString> EngineLaunchTools::OpenFileDialog()
+{
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+
+	TArray<FString> OpenFilenames;
+	if (DesktopPlatform)
+	{
+		const bool bOpened = DesktopPlatform->OpenFileDialog(
+			nullptr,
+			TEXT("Open Files"),
+			FString(TEXT("")),
+			TEXT(""),
+			TEXT("*.*"),
+			EFileDialogFlags::None,
+			OpenFilenames
+		);
+	}
+	return OpenFilenames;
+}
 
 EngineBuildVersion EngineLaunchTools::GetBuildVersion(const FString& EngineRoot)
 {

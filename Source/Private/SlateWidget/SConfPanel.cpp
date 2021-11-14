@@ -165,6 +165,14 @@ void SConfPanel::Construct(const FArguments& InArgs)
 												.Text(LOCTEXT("OpenSln", "OpenSln"))
 												.OnClicked(this, &SConfPanel::BtnClickEventOpenVS)
 											]
+											+ SHorizontalBox::Slot()
+											.HAlign(HAlign_Left)
+											.AutoWidth()
+											[
+												SNew(SButton)
+												.Text(LOCTEXT("OpenEngineDir", "OpenDir"))
+												.OnClicked(this, &SConfPanel::BtnClickEventOpenEngineDir)
+											]
 									]
 							]
 					// open project location
@@ -354,7 +362,7 @@ void SConfPanel::HyLinkClickEventOpenDeveloperWebsite()
 
 EVisibility SConfPanel::BtnGenerateSlnVisibility()const
 {
-	EVisibility VisibilityStatus = EVisibility::Hidden;
+	EVisibility VisibilityStatus = EVisibility::Collapsed;
 	FString ProjectPath = GetLaunchConf().Project;
 	if(ProjectPath.EndsWith(TEXT(".uproject")) && FPaths::FileExists(ProjectPath))
 	{
@@ -473,6 +481,19 @@ FReply SConfPanel::BtnClickEventOpenVS()
 	}
 	FString FinalCmdParams = TEXT("/c ") + ue4sln;
 	FPlatformProcess::CreateProc(TEXT("cmd.exe"), *FinalCmdParams, true, false, false, NULL, NULL, NULL, NULL, NULL);
+	return FReply::Handled();
+}
+
+FReply SConfPanel::BtnClickEventOpenEngineDir()
+{
+	FString FinalCommdParas = TEXT("/e,/root,");
+
+	FString IsValidDir = GetSelectedEnginePath();
+	FPaths::NormalizeFilename(IsValidDir);
+	IsValidDir = IsValidDir.Replace(TEXT("/"),TEXT("\\"));
+	FinalCommdParas.Append(IsValidDir);
+
+	FPlatformProcess::CreateProc(TEXT("explorer "), *FinalCommdParas, true, false, false, NULL, NULL, NULL, NULL, NULL);
 	return FReply::Handled();
 }
 
@@ -661,6 +682,7 @@ TSharedRef<SEditableBoxWraper> SConfPanel::CreateEditableTextBox(const FString& 
 	TSharedRef<SEditableBoxWraper> CreatedWidget = SNew(SEditableBoxWraper)
 		.EditableHintText(LOCTEXT("LaunchParam_0", "Please input Launch paramater."))
 		.EditableText(FText::FromString(TextContent))
+		.BtnOpenText(FText::FromString(TEXT("O")))
 		.BtnClearText(FText::FromString(TEXT("C")))
 		.BtnDeleteText(FText::FromString(TEXT("D")));
 	return CreatedWidget;
@@ -696,7 +718,7 @@ void SConfPanel::UpdateOpenVSButton(const FString& EnginePath)
 		if (!IsLauncherInstalledEngine)
 			BtnOpenVS->SetVisibility(EVisibility::Visible);
 		else
-			BtnOpenVS->SetVisibility(EVisibility::Hidden);
+			BtnOpenVS->SetVisibility(EVisibility::Collapsed);
 	}
 }
 
@@ -747,7 +769,7 @@ void SConfPanel::UpdateOpenProjectSlnButton(const FString& SelectedProjectPath)
 		BtnOpenProjectSln->SetVisibility(EVisibility::Visible);
 	}
 	else {
-		BtnOpenProjectSln->SetVisibility(EVisibility::Hidden);
+		BtnOpenProjectSln->SetVisibility(EVisibility::Collapsed);
 	}
 }
 

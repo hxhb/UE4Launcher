@@ -27,6 +27,7 @@ struct EngineBuildVersion
 class EngineLaunchTools
 {
 public:
+	static TArray<FString> OpenFileDialog();
 	static EngineBuildVersion GetBuildVersion(const FString& EngineRoot);
 	static FString GetUnrealBuildToolBin(const FString& EngineRoot,const EngineBuildVersion& Version);
 	static bool EngineLauncher(const FLaunchConf& conf);

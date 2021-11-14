@@ -2,6 +2,7 @@
 
 #include "SlateWidget/SEditableBoxWraper.h"
 #include "SlateOptMacros.h"
+#include "Tools/EngineLaunchTools.h"
 //
 #define LOCTEXT_NAMESPACE "EditableBoxWraper"
 
@@ -18,6 +19,15 @@ void SEditableBoxWraper::Construct(const FArguments& InArgs)
 				SAssignNew(EditableTextBox,SEditableTextBox)
 				.Text(InArgs._EditableText)
 				.HintText(InArgs._EditableHintText)
+			]
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(SButton)
+				.Text(InArgs._BtnOpenText)
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.OnClicked(this, &SEditableBoxWraper::OnClickEventOpenText)
 			]
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
@@ -47,6 +57,20 @@ FReply SEditableBoxWraper::OnClickEventClearText()
 	EditableTextBox->SetText(FText::FromString(TEXT("")));
 	return FReply::Handled();
 }
+
+FReply SEditableBoxWraper::OnClickEventOpenText()
+{
+	TArray<FString> OpenFiles = EngineLaunchTools::OpenFileDialog();
+	FString AppendText;
+	for(const auto& File:OpenFiles)
+	{
+		AppendText += FPaths::ConvertRelativePathToFull(File);
+	}
+	
+	EditableTextBox->SetText(FText::FromString(EditableTextBox->GetText().ToString() + AppendText));
+	return FReply::Handled();
+}
+
 FReply SEditableBoxWraper::OnClickEventDeleteSelf()
 {
 	EditableTextBox->SetText(FText::FromString(TEXT("")));
