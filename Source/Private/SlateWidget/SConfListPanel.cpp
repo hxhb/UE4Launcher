@@ -20,7 +20,6 @@
 #include "Widgets/SCanvas.h"
 #include "Tools/SerializationTools.h"
 #include "Tools/EngineLaunchTools.h"
-
 #define LOCTEXT_NAMESPACE "WidgetConfigListPanel"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -157,14 +156,14 @@ void SConfigListPanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SOverlay)
 				]
-				+SHorizontalBox::Slot()
-				.AutoWidth()
-				.HAlign(HAlign_Center)
-				[
-					SNew(SHyperlink)
-					.Text(LOCTEXT("LauncherVersion", LAUNCHER_VERSION))
-					.OnNavigate(this, &SConfigListPanel::HyLinkClickEventOpenVersionWebsite)
-				]
+				//+SHorizontalBox::Slot()
+				//.AutoWidth()
+				//.HAlign(HAlign_Center)
+				//[
+				//	SNew(SHyperlink)
+				//	.Text(LOCTEXT("LauncherVersion", *UKismetStringLibrary::Conv_IntToString(CURRENT_VERSION_ID)))
+				//	.OnNavigate(this, &SConfigListPanel::HyLinkClickEventOpenVersionWebsite)
+				//]
 			]
 			+SVerticalBox::Slot()
 			.AutoHeight()

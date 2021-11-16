@@ -91,14 +91,14 @@ void SConfPanel::Construct(const FArguments& InArgs)
 											[
 												SNew(SOverlay)
 											]
-											+SHorizontalBox::Slot()
-											.AutoWidth()
-											.HAlign(HAlign_Center)
-											[
-												SNew(SHyperlink)
-													.Text(LOCTEXT("Developer", "Developed by lipengzha"))
-													.OnNavigate(this, &SConfPanel::HyLinkClickEventOpenDeveloperWebsite)
-											]
+											//+SHorizontalBox::Slot()
+											//.AutoWidth()
+											//.HAlign(HAlign_Center)
+											//[
+											//	SNew(SHyperlink)
+											//		.Text(LOCTEXT("Developer", "Developed by lipengzha"))
+											//		.OnNavigate(this, &SConfPanel::HyLinkClickEventOpenDeveloperWebsite)
+											//]
 									]
 								]
 								+SVerticalBox::Slot()

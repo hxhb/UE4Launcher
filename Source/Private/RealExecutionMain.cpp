@@ -121,11 +121,12 @@ int RealExecutionMain(const TCHAR* pCmdLine)
 
 
 #include "SlateWidget/SConfigListPanel.h"
-
+#include "SlateWidget/SVersionUpdater/SVersionUpdaterWidget.h"
 namespace WindowManager
 {
 	static TSharedPtr < SConfPanel > LauncherPanel;
 	static TSharedPtr < SConfigListPanel > LauncherConfListPanel;
+	static TSharedPtr < SVersionUpdaterWidget > VersionUpdaterWidget;
 	void OnConfigSelected(FLaunchConf Config)
 	{
 		if(LauncherPanel.IsValid())
@@ -154,20 +155,36 @@ namespace WindowManager
 			.MinWidth(1200)
 			.IsTopmostWindow(false)
 			[
-				SNew(SHorizontalBox)
-				+SHorizontalBox::Slot()
-				.FillWidth(0.3)
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
 				[
-					SNew(SBox)
+					SAssignNew(VersionUpdaterWidget,SVersionUpdaterWidget)
+					.ToolName(FText::FromString(TOOL_NAME))
+					.DeveloperName(FText::FromString(TEXT("lipengzha")))
+					.DeveloperWebsite(FText::FromString(TEXT("https://imzlp.com")))
+					.UpdateWebsite(FText::FromString(TEXT("https://imzlp.com/posts/11750/")))
+					.CurrentVersion(CURRENT_VERSION_ID)
+				]
+				+SVerticalBox::Slot()
+				.FillHeight(1.0)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.FillWidth(0.3)
 					[
-						SAssignNew(LauncherConfListPanel,SConfigListPanel)
+						SNew(SBox)
+						[
+							SAssignNew(LauncherConfListPanel, SConfigListPanel)
+						]
+					]
+					+ SHorizontalBox::Slot()
+					.FillWidth(0.7)
+					[
+						SAssignNew(LauncherPanel, SConfPanel)
 					]
 				]
-				+SHorizontalBox::Slot()
-				.FillWidth(0.7)
-				[
-					SAssignNew(LauncherPanel, SConfPanel)
-				]
+
 				//.OnOpenedFileEvent.BindStatic(&WindowManager::OnOpenFileChangeWindowTitle)
 			];
 		LauncherConfListPanel->OnConfigFileSelected.BindStatic(&WindowManager::OnConfigSelected);

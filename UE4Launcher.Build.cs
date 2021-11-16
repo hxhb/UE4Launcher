@@ -37,7 +37,8 @@ public class UE4Launcher : ModuleRules
                 "StandaloneRenderer",
                 "WebBrowser",
                 "SourceCodeAccess",
-				"OpenGL"
+				"OpenGL",
+				"HTTP"
             }
         );
         PrivateIncludePathModuleNames.AddRange(
@@ -50,7 +51,12 @@ public class UE4Launcher : ModuleRules
                 "SlateReflector",
             }
         );
-        PublicDefinitions.Add("LAUNCHER_VERSION=\"v0.22\"");
-    }
+		PublicDefinitions.AddRange(new string[]
+		{
+			"TOOL_NAME=\"UELauncher\"",
+			"CURRENT_VERSION_ID=23",
+			"REMOTE_VERSION_FILE=\"https://imzlp.com/opensource/version.json\""
+		});
+	}
 }
 
