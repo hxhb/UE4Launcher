@@ -8,7 +8,7 @@ This is A simply & quickly UE4 Project Launcher(support launch params).
 
 ![New](https://img.imzlp.com/imgs/zlp/picgo/2021/20211110083056.png)
 
-![OLd](https://imzlp.me/posts/31962/ue4launcher-noconf-window.png)
+![OLd](https://img.imzlp.com/imgs/zlp/blog/posts/31962/ue4launcher-noconf-window.png)
 
 2. Edit Config:
 
